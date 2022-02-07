@@ -1,37 +1,41 @@
-const express = require("express");
-const path = require("path");
-const cookieParser = require("cookie-parser");
-const logger = require("morgan");
-const passport = require("passport");
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
+import express, { json, urlencoded } from "express";
+import path from "path";
+import cookieParser from "cookie-parser";
+import logger from "morgan";
+import passport from "passport";
+import expressSession from "express-session";
+import connectMongo from "connect-mongo";
+import db from "./db.js";
 
-require("dotenv").config();
-
-const indexRouter = require("./routes/index");
-const usersRouter = require("./routes/users");
-const authRouter = require("./routes/auth");
+import indexRouter from "./routes/index.js";
+import usersRouter from "./routes/users.js";
+import authRouter from "./routes/auth.js";
+import { ensureLoggedIn } from "connect-ensure-login";
 
 const app = express();
 
+const __dirname = path.resolve();
+
+db.init();
+
 app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(json());
+app.use(urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
-  session({
+  expressSession({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URL }),
+    store: connectMongo.create({ mongoUrl: process.env.MONGODB_URL }),
   })
 );
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/", indexRouter);
-app.use("/users", passport.authenticate("oauth2"), usersRouter);
+app.use("/users", ensureLoggedIn(), usersRouter);
 app.use("/auth", authRouter);
 
-module.exports = app;
+export default app;

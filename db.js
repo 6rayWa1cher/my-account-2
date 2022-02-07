@@ -1,12 +1,20 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const Schema = mongoose.Schema;
+const mongoUrl = process.env.MONGODB_URL;
 
-const UserSchema = new Schema({
-  a_string: String,
-  a_date: Date,
+const db = mongoose.connection;
+
+db.on("error", console.error.bind(console, "MongoDB connection error:"));
+
+db.once("open", () => {
+  console.log("Connected successfully");
 });
 
-module.exports = {
-  UserSchema,
+export const init = () => {
+  mongoose.connect(mongoUrl, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 };
+
+export default { init };
