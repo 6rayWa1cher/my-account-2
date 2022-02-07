@@ -8,7 +8,7 @@ import User from "../models/user.js";
 const router = express.Router();
 
 class FireflyOAuth2Strategy extends OAuth2Strategy {
-  constructor({ url, clientID, clientSecret, callbackURL }, verify) {
+  constructor({ url, clientID, clientSecret, callbackURL, ...rest }, verify) {
     super(
       {
         authorizationURL: `${url}/oauth/authorize`,
@@ -16,6 +16,7 @@ class FireflyOAuth2Strategy extends OAuth2Strategy {
         clientID,
         clientSecret,
         callbackURL,
+        ...rest,
       },
       verify
     );
@@ -39,8 +40,9 @@ passport.use(
       clientID: process.env.FIREFLY_III_CLIENT_ID,
       clientSecret: process.env.FIREFLY_III_CLIENT_SECRET,
       callbackURL: "http://localhost:3000/auth/fireflyiii/callback",
+      passReqToCallback: true,
     },
-    (accessToken, refreshToken, profile, done) => {
+    (req, accessToken, refreshToken, profile, done) => {
       const {
         id,
         attributes: { blocked, email },
@@ -49,6 +51,11 @@ passport.use(
       if (blocked) {
         done(new Error("Firefly user id blocked"), null);
       }
+
+      req.session.firefly = {
+        accessToken,
+        refreshToken,
+      };
 
       User.findOne({ fireflyId: id }, (err, user) =>
         user || err
@@ -75,10 +82,16 @@ router.get("/fireflyiii", passport.authenticate("oauth2"));
 
 router.get(
   "/fireflyiii/callback",
-  passport.authenticate("oauth2", { failureRedirect: "/login" }),
+  passport.authenticate("oauth2", { failureRedirect: "/auth/login" }),
   (req, res, next) => {
-    res.redirect("/");
+    res.redirect(req.session.returnTo ?? "/");
   }
 );
+
+router.get("/login", (req, res) => res.redirect("/auth/fireflyiii"));
+
+router.get("/logout", (req, res) => {
+  req.logout();
+});
 
 export default router;
