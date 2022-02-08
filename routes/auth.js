@@ -39,7 +39,7 @@ passport.use(
       url: process.env.FIREFLY_III_URL,
       clientID: process.env.FIREFLY_III_CLIENT_ID,
       clientSecret: process.env.FIREFLY_III_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/auth/fireflyiii/callback",
+      callbackURL: `${process.env.APP_URL}/auth/fireflyiii/callback`,
       passReqToCallback: true,
     },
     (req, accessToken, refreshToken, profile, done) => {

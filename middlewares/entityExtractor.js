@@ -1,0 +1,18 @@
+import Account from "../models/account.js";
+import Project from "../models/project.js";
+
+export const getAllProjects = (req, res, next) =>
+  Project.find({ owner: req.user.id })
+    .then((projects) => {
+      req.projects = projects;
+      next();
+    })
+    .catch((err) => next(err));
+
+export const getAllAccounts = (req, res, next) =>
+  Account.find({ owner: req.user.id })
+    .then((accounts) => {
+      req.accounts = accounts;
+      next();
+    })
+    .catch((err) => next(err));

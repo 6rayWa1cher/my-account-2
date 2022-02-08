@@ -11,6 +11,7 @@ import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
 import authRouter from "./routes/auth.js";
 import accountRouter from "./routes/account.js";
+import projectRouter from "./routes/project.js";
 import { ensureLoggedIn } from "connect-ensure-login";
 
 const app = express();
@@ -23,7 +24,7 @@ app.use(logger("dev"));
 app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use(cookieParser());
-// app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(
   expressSession({
     secret: process.env.SESSION_SECRET,
@@ -40,6 +41,7 @@ app.use("/", indexRouter);
 app.use("/users", ensureLogIn(), usersRouter);
 app.use("/auth", authRouter);
 app.use("/accounts", ensureLogIn(), accountRouter);
+app.use("/projects", ensureLogIn(), projectRouter);
 
 app.use((err, req, res, next) => {
   const isNotFound = ~err.message.indexOf("not found");

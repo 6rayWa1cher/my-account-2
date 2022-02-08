@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <%- include('../partials/head'); %>
+  </head>
+  <body>
+    <header><%- include('../partials/header') %></header>
+    <div class="container pt-5">
+      <form action="/accounts/" method="post">
+        <div class="field">
+          <label class="label">Стратегия</label>
+          <div class="control">
+            <div class="select">
+              <select name="importStrategy">
+                <option value="strata1">Select dropdown</option>
+                <option value="strata2">With options</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Название счета</label>
+          <div class="control">
+            <input
+              class="input"
+              type="text"
+              placeholder="Text input"
+              name="fireflyName"
+            />
+          </div>
+        </div>
+        <div class="field is-grouped">
+          <div class="control">
+            <button type="submit" class="button is-link">Отправить</button>
+          </div>
+          <div class="control">
+            <button type="reset" class="button is-link is-light">
+              Очистить
+            </button>
+          </div>
+        </div>
+      </form>
+      <% accounts.forEach(account => {%>
+      <p><%=JSON.stringify(account)%></p>
+      <%});%>
+    </div>
+    <footer><%- include('../partials/footer') %></footer>
+  </body>
+</html>
