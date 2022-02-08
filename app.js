@@ -6,12 +6,13 @@ import passport from "passport";
 import expressSession from "express-session";
 import connectMongo from "connect-mongo";
 import db from "./db.js";
+import cors from "cors";
 
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
 import authRouter from "./routes/auth.js";
 import accountRouter from "./routes/account.js";
-import { ensureLoggedIn } from "connect-ensure-login";
+import { ensureLogIn } from "./utils.js";
 
 const app = express();
 
@@ -19,6 +20,12 @@ const __dirname = path.resolve();
 
 db.init();
 
+const corsOptions = {
+  origin: "http://localhost:3000",
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(json());
 app.use(urlencoded({ extended: false }));
@@ -35,7 +42,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-const ensureLogIn = () => ensureLoggedIn({ redirectTo: "/auth/login" });
 app.use("/", indexRouter);
 app.use("/users", ensureLogIn(), usersRouter);
 app.use("/auth", authRouter);

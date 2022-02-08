@@ -5,6 +5,7 @@ import crypto from "crypto";
 import logger from "morgan";
 import fetch from "node-fetch";
 import User from "../models/user.js";
+import { ensureLogIn } from "../utils.js";
 const router = express.Router();
 
 class FireflyOAuth2Strategy extends OAuth2Strategy {
@@ -39,7 +40,7 @@ passport.use(
       url: process.env.FIREFLY_III_URL,
       clientID: process.env.FIREFLY_III_CLIENT_ID,
       clientSecret: process.env.FIREFLY_III_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/auth/fireflyiii/callback",
+      callbackURL: `${process.env.APP_URL}/auth/fireflyiii/callback`,
       passReqToCallback: true,
     },
     (req, accessToken, refreshToken, profile, done) => {
@@ -68,12 +69,12 @@ passport.use(
   )
 );
 
-passport.serializeUser(function (user, done) {
+passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser(function (id, done) {
-  User.findById(id, function (err, user) {
+passport.deserializeUser((id, done) => {
+  User.findById(id, (err, user) => {
     done(err, user);
   });
 });
@@ -84,7 +85,8 @@ router.get(
   "/fireflyiii/callback",
   passport.authenticate("oauth2", { failureRedirect: "/auth/login" }),
   (req, res, next) => {
-    res.redirect(req.session.returnTo ?? "/");
+    // res.redirect(req.session.returnTo ?? "/");
+    res.redirect(process.env.OAUTH_REDIRECT ?? req.session.returnTo ?? "/");
   }
 );
 
@@ -92,6 +94,9 @@ router.get("/login", (req, res) => res.redirect("/auth/fireflyiii"));
 
 router.get("/logout", (req, res) => {
   req.logout();
+  res.send();
 });
+
+router.get("/fail", (req, res) => res.status(401).send());
 
 export default router;
