@@ -18,12 +18,12 @@ const app = express();
 const __dirname = path.resolve();
 
 db.init();
-
+app.set("view engine", "ejs");
 app.use(logger("dev"));
 app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+// app.use(express.static(path.join(__dirname, "public")));
 app.use(
   expressSession({
     secret: process.env.SESSION_SECRET,
