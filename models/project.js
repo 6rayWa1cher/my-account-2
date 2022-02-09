@@ -6,12 +6,13 @@ const ProjectSchema = new mongoose.Schema({
   lastUpdatedAt: Date,
   name: String,
   status: String,
+  account: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
   transactionGroups: [
     {
       groupTitle: String,
       transactions: [
         {
-          type: String,
+          transactionType: String,
           date: Date,
           amount: String,
           description: String,

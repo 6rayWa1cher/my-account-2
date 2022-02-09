@@ -16,3 +16,16 @@ export const getAllAccounts = (req, res, next) =>
       next();
     })
     .catch((err) => next(err));
+
+export const getAccountById =
+  ({ field, path = "id" } = {}) =>
+  (req, res, next) =>
+    Account.find({
+      owner: req.user.id,
+      _id: field ? req.body[field] : req.params[path],
+    })
+      .then((account) => {
+        req.account = account;
+        next();
+      })
+      .catch((err) => next(err));

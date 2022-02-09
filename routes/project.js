@@ -1,5 +1,12 @@
 import express from "express";
+import { body, validationResult } from "express-validator";
+import {
+  getAccountById,
+  getAllAccounts,
+  getAllProjects,
+} from "../middlewares/entityExtractor.js";
 import Project from "../models/project.js";
+import { importTinkoff } from "../services/importStrategies.js";
 const router = express.Router();
 
 // router.get("/", (req, res, next) => {
@@ -41,12 +48,42 @@ const router = express.Router();
 //   );
 // });
 
-router.post("/", (req, res) => {
-  // new Project(req.body)
-  // .save()
-  // .then((v) => res.redirect("/projects"))
-  // .catch((err) => next(err));
-  res.send();
-});
+const renderPageProjects = (req, res) =>
+  getAllProjects(req, res, () =>
+    getAllAccounts(req, res, () =>
+      res.render("pages/projects", {
+        projects: req.projects,
+        accounts: req.accounts,
+        validationErrors: validationResult(req),
+        // error: err || req.processError,
+        ...req.renderData,
+      })
+    )
+  );
+
+router.get("/", renderPageProjects);
+
+router.post(
+  "/",
+  body("accountId").exists().isMongoId(),
+  getAccountById({ field: "accountId" }),
+  async (req, res, next) => {
+    const validationErrors = validationResult(req);
+    if (!validationErrors.isEmpty()) {
+      return next();
+    }
+    if (!req.files.upload || req.files.upload.size === 0) {
+      req.processError = new Error("File is missing of not uploaded");
+      return next();
+    }
+    try {
+      await importTinkoff({}, req.account, req.files.upload.data);
+      next();
+    } catch (err) {
+      next(err);
+    }
+  },
+  renderPageProjects
+);
 
 export default router;

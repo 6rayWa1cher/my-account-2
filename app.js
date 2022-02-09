@@ -6,13 +6,14 @@ import passport from "passport";
 import expressSession from "express-session";
 import connectMongo from "connect-mongo";
 import db from "./db.js";
+import { ensureLoggedIn } from "connect-ensure-login";
+import fileUpload from "express-fileupload";
 
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
 import authRouter from "./routes/auth.js";
 import accountRouter from "./routes/account.js";
 import projectRouter from "./routes/project.js";
-import { ensureLoggedIn } from "connect-ensure-login";
 
 const app = express();
 
@@ -35,15 +36,28 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(
+  fileUpload({
+    limits: { fileSize: 5 * 1024 * 1024 },
+  })
+);
 
 const ensureLogIn = () => ensureLoggedIn({ redirectTo: "/auth/login" });
+
 app.use("/", indexRouter);
 app.use("/users", ensureLogIn(), usersRouter);
 app.use("/auth", authRouter);
 app.use("/accounts", ensureLogIn(), accountRouter);
 app.use("/projects", ensureLogIn(), projectRouter);
 
-app.use((err, req, res, next) => {
+app.use((req, res) => {
+  res.sendStatus(404);
+});
+
+app.use(function (err, req, res, next) {
+  // if (req.renderOnError) {
+  // req.renderOnError({ error: err });
+  // } else {
   const isNotFound = ~err.message.indexOf("not found");
   const isCastError = ~err.message.indexOf("Cast to ObjectId failed");
   if (err.message && (isNotFound || isCastError)) {
@@ -53,10 +67,7 @@ app.use((err, req, res, next) => {
   console.log(err.stack);
 
   res.status(500).json({ error: err.stack });
-});
-
-app.use((req, res) => {
-  res.sendStatus(404);
+  // }
 });
 
 export default app;
