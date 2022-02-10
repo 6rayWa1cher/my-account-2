@@ -48,18 +48,17 @@ const router = express.Router();
 //   );
 // });
 
-const renderPageProjects = (req, res) =>
-  getAllProjects(req, res, () =>
-    getAllAccounts(req, res, () =>
-      res.render("pages/projects", {
-        projects: req.projects,
-        accounts: req.accounts,
-        validationErrors: validationResult(req),
-        // error: err || req.processError,
-        ...req.renderData,
-      })
-    )
-  );
+const renderPageProjects = [
+  getAllProjects,
+  getAllAccounts,
+  (req, res) =>
+    res.render("pages/projects", {
+      projects: req.projects,
+      accounts: req.accounts,
+      validationErrors: validationResult(req),
+      ...req.renderData,
+    }),
+];
 
 router.get("/", renderPageProjects);
 
@@ -77,11 +76,22 @@ router.post(
       return next();
     }
     try {
-      await importTinkoff({}, req.account, req.files.upload.data);
+      const constructed = await importTinkoff(
+        {},
+        req.account,
+        req.files.upload.data
+      );
+      const saved = await new Project(constructed).save();
+      console.log(saved.toString());
       next();
     } catch (err) {
       next(err);
     }
+    // importTinkoff({}, req.account, req.files.upload.data)
+    // .then(() => next())
+    // .catch((err) => {
+    //   next(err);
+    // });
   },
   renderPageProjects
 );

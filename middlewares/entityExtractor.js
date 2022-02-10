@@ -20,7 +20,7 @@ export const getAllAccounts = (req, res, next) =>
 export const getAccountById =
   ({ field, path = "id" } = {}) =>
   (req, res, next) =>
-    Account.find({
+    Account.findOne({
       owner: req.user.id,
       _id: field ? req.body[field] : req.params[path],
     })
