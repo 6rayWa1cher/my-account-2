@@ -8,6 +8,7 @@ import connectMongo from "connect-mongo";
 import db from "./db.js";
 import { ensureLoggedIn } from "connect-ensure-login";
 import fileUpload from "express-fileupload";
+import methodOverride from "method-override";
 
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
@@ -21,6 +22,7 @@ const __dirname = path.resolve();
 
 db.init();
 app.set("view engine", "ejs");
+app.use(methodOverride("_method"));
 app.use(logger("dev"));
 app.use(json());
 app.use(urlencoded({ extended: false }));

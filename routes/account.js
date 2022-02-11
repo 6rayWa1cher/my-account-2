@@ -3,84 +3,59 @@ import Account from "../models/account.js";
 import { getAllAccounts } from "../middlewares/entityExtractor.js";
 import { body, validationResult } from "express-validator";
 import { getAccountBasicInfoFromNameApi } from "../api/firefly3.js";
+import { strategiesMap } from "../services/importStrategies.js";
 const router = express.Router();
 
-// router.get("/", (req, res, next) => {
-//   Account.find({ owner: req.user.id }, (err, account) =>
-//     err ? next(err) : res.send(account)
-//   );
-// });
-
-// router.get("/:account", (req, res, next) => {
-//   Account.findOne(
-//     { owner: req.user.id, _id: req.params.account },
-//     (err, account) => (err || !account ? next(err) : res.send(account))
-//   );
-// });
-
-const renderPageAccounts = (req, res, options) =>
-  getAllAccounts(req, res, () =>
+const renderPageAccounts = [
+  getAllAccounts,
+  (req, res) =>
     res.render("pages/accounts", {
       accounts: req.accounts,
-      ...options,
-    })
-  );
+      validationErrors: validationResult(req),
+      processError: req.processError,
+      importStrategies: Object.entries(strategiesMap).map(
+        ([internalReference, { name }]) => ({ internalReference, name })
+      ),
+      ...req.renderData,
+    }),
+];
 
-router.get("/", getAllAccounts, (req, res) => {
-  res.render("pages/accounts", { accounts: req.accounts });
-});
+router.get("/", renderPageAccounts);
 
 router.post(
   "/",
   body("importStrategy").exists().isLength({ min: 5, max: 25 }),
   body("fireflyName").exists(),
-  (req, res) => {
+  async (req, res, next) => {
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) {
-      renderPageAccounts(req, res, { validationErrors });
-    } else {
-      getAccountBasicInfoFromNameApi({
+      return next();
+    }
+    try {
+      const fireflyAccounts = await getAccountBasicInfoFromNameApi({
         name: req.body.fireflyName,
         accessToken: req.session.firefly.accessToken,
-      })
-        .then(async (acc) => {
-          if (!acc || acc.length === 0) {
-            throw new Error("account wasn't found on ff3");
-          }
-          return acc;
-        })
-        .then((acc) =>
-          new Account({
-            importStrategy: req.body.importStrategy,
-            fireflyAccount: {
-              id: acc[0].id,
-              name: acc[0].name,
-            },
-            owner: req.user.id,
-          }).save()
-        )
-        .then((v) => renderPageAccounts(req, res, { newAccount: v }))
-        .catch((error) => {
-          console.error(error);
-          renderPageAccounts(req, res, { error });
-        });
+      });
+      if (!fireflyAccounts || fireflyAccounts.length === 0) {
+        throw new Error("account wasn't found on ff3");
+      }
+      const fireflyAccount = fireflyAccounts[0];
+      const saved = await new Account({
+        importStrategy: req.body.importStrategy,
+        fireflyAccount: {
+          id: fireflyAccount.id,
+          name: fireflyAccount.name,
+        },
+        owner: req.user.id,
+      }).save();
+      console.log(saved.toString());
+    } catch (error) {
+      console.error(error);
+      req.processError = error;
     }
-  }
+    next();
+  },
+  renderPageAccounts
 );
-
-// router.put("/:account", (req, res, next) => {
-//   Account.findOneAndReplace(
-//     { owner: req.user.id, _id: req.params.account },
-//     req.body,
-//     (err, account) => (err || !account ? next(err) : res.send(account))
-//   );
-// });
-
-// router.delete("/:account", (req, res, next) => {
-//   Account.findOneAndDelete(
-//     { owner: req.user.id, _id: req.params.account },
-//     (err, account) => (err || !account ? next(err) : res.send(account))
-//   );
-// });
 
 export default router;

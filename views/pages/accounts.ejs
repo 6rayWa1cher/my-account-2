@@ -12,8 +12,9 @@
           <div class="control">
             <div class="select">
               <select name="importStrategy">
-                <option value="strata1">Select dropdown</option>
-                <option value="strata2">With options</option>
+                <% importStrategies.forEach(({ internalReference, name }) => {%>
+                <option value="<%- internalReference %>"><%= name %></option>
+                <% }); %>
               </select>
             </div>
           </div>

@@ -29,3 +29,16 @@ export const getAccountById =
         next();
       })
       .catch((err) => next(err));
+
+export const getProjectById =
+  ({ field, path = "id" } = {}) =>
+  (req, res, next) =>
+    Project.findOne({
+      owner: req.user.id,
+      _id: field ? req.body[field] : req.params[path],
+    })
+      .then((project) => {
+        req.project = project;
+        next();
+      })
+      .catch((err) => next(err));

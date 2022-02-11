@@ -5,7 +5,7 @@ import moment from "moment-timezone";
 
 const normalizeAmount = (amount) => (amount[0] === "-" ? amount : "-" + amount);
 
-export const importTinkoff = ({ name }, account, buffer) =>
+export const importTinkoff = (account, buffer) =>
   new Promise((resolve, reject) => {
     try {
       const stream = bufferToStream(buffer);
@@ -62,7 +62,6 @@ export const importTinkoff = ({ name }, account, buffer) =>
           resolve({
             owner: account.owner,
             createdAt: new Date(),
-            name,
             status: "created",
             account: account._id,
             transactionGroups,
@@ -72,3 +71,10 @@ export const importTinkoff = ({ name }, account, buffer) =>
       reject(err);
     }
   });
+
+export const strategiesMap = {
+  tinkoff: {
+    func: importTinkoff,
+    name: "Тинькофф",
+  },
+};

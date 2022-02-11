@@ -2,51 +2,13 @@ import express from "express";
 import { body, validationResult } from "express-validator";
 import {
   getAccountById,
+  getProjectById,
   getAllAccounts,
   getAllProjects,
 } from "../middlewares/entityExtractor.js";
 import Project from "../models/project.js";
-import { importTinkoff } from "../services/importStrategies.js";
+import { strategiesMap } from "../services/importStrategies.js";
 const router = express.Router();
-
-// router.get("/", (req, res, next) => {
-//   Project.find({ owner: req.user.id }, (err, value) =>
-//     err ? next(err) : res.send(value)
-//   );
-// });
-
-// router.get("/:id", (req, res, next) => {
-//   Project.findOne({ owner: req.user.id, _id: req.params.id }, (err, value) =>
-//     err || !value ? next(err) : res.send(value)
-//   );
-// });
-
-// router.post("/", (req, res, next) => {
-//   new Project(req.body)
-//     .save()
-//     .then((v) => res.send(v))
-//     .catch((err) => next(err));
-// });
-
-// router.put("/:id", (req, res, next) => {
-//   Project.findOneAndReplace(
-//     { owner: req.user.id, _id: req.params.id },
-//     req.body,
-//     (err, value) => (err || !value ? next(err) : res.send(value))
-//   );
-// });
-
-// router.delete("/:id", (req, res, next) => {
-//   Project.findOneAndDelete(
-//     { owner: req.user.id, _id: req.params.id },
-//     (err, value) => (err || !value ? next(err) : res.send(value))
-//   );
-// });
-// router.get("/", (req, res) => {
-//   Project.find({ owner: req.user.id }, (err, value) =>
-//     err ? next(err) : res.render("pages/projects", { projects: value })
-//   );
-// });
 
 const renderPageProjects = [
   getAllProjects,
@@ -56,6 +18,7 @@ const renderPageProjects = [
       projects: req.projects,
       accounts: req.accounts,
       validationErrors: validationResult(req),
+      processError: req.processError,
       ...req.renderData,
     }),
 ];
@@ -76,24 +39,44 @@ router.post(
       return next();
     }
     try {
-      const constructed = await importTinkoff(
-        {},
-        req.account,
-        req.files.upload.data
-      );
-      const saved = await new Project(constructed).save();
+      const { func } = strategiesMap[req.account.importStrategy];
+      const constructed = await func(req.account, req.files.upload.data);
+      const projectName = `Проект счета '${
+        req.account.fireflyAccount.name
+      }' от ${new Date().toLocaleString("ru-RU")}`;
+      const saved = await new Project({
+        ...constructed,
+        name: projectName,
+      }).save();
       console.log(saved.toString());
-      next();
+      res.redirect(`/projects/${saved._id}`);
     } catch (err) {
-      next(err);
+      req.processError = err;
+      console.error(err);
+      next();
     }
-    // importTinkoff({}, req.account, req.files.upload.data)
-    // .then(() => next())
-    // .catch((err) => {
-    //   next(err);
-    // });
   },
   renderPageProjects
 );
+
+router.get("/:id", getProjectById(), (req, res) => {
+  if (!req.project) {
+    throw new Error("not found");
+  }
+  res.render("pages/project", {
+    project: req.project,
+    deleteLink: `/projects/${req.project._id}?_method=DELETE`,
+  });
+});
+
+router.delete("/:id", getProjectById(), (req, res, next) => {
+  if (!req.project) {
+    throw new Error("not found");
+  }
+  Project.findByIdAndDelete(req.params.id, (err) => {
+    if (err) next(err);
+    res.redirect("/projects");
+  });
+});
 
 export default router;
