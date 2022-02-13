@@ -1,149 +1,156 @@
-<!DOCTYPE html>
-<html lang="ru">
-
-<head>
-  <%- include('../partials/head'); %>
-</head>
-
-<body>
-  <header><%- include('../partials/header') %></header>
-  <div class="container pt-5">
-    <div class="columns">
-      <div class="column">
-        <h1 class="title"><%= project.name %></h1>
-      </div>
-      <div class="column is-narrow">
-        <form action="<%= deleteLink %>" method="post">
-          <input type="submit" value="Удалить" class="button is-danger" />
-        </form>
-      </div>
-    </div>
-    <div class="box">
-      <div class="table-container">
-        <table class="table is-hoverable is-fullwidth is-striped">
-          <thead>
-            <tr>
-              <th>Группа</th>
-              <th>Дата</th>
-              <th>Категория</th>
-              <th><abbr title="Счет-отправитель">СО</abbr></th>
-              <th><abbr title="Счет-получатель">СП</abbr></th>
-              <th>Сумма</th>
-              <th>Бюджет</th>
-              <th>Теги</th>
-              <th>Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% const currencyToSign = {
-                RUB: '₽',
-                USD: '$',
-                EUR: '€',
-                GBP: '£'
-              };
-              // https://stackoverflow.com/a/16348977
-              const stringToColour = (str) => {
-                let hash = 0;
-                for (let i = 0; i < str.length; i++) {
-                  hash = str.charCodeAt(i) + ((hash << 5) - hash);
-                }
-                let colour='#';
-                for (let i = 0; i < 3; i++) {
-                  const value = (hash >> (i * 8)) & 0xFF;
-                  colour += ('00' + value.toString(16)).substr(-2);
-                }
-                return colour;
-              };
-              // https://stackoverflow.com/a/5624139
-              const hexToRgb = (hex) => {
-                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result ? {
-                  r: parseInt(result[1], 16),
-                  g: parseInt(result[2], 16),
-                  b: parseInt(result[3], 16)
-                } : null;
-              }
-              // https://stackoverflow.com/a/9664560
-              const darkOrLight = (hex) => {
-                const { r, g, b } = hexToRgb(hex);
-                let brightness;
-                brightness = (r * 299) + (g * 587) + (b * 114);
-                brightness = brightness / 255000;
-
-                // values range from 0 to 1
-                // anything greater than 0.5 should be bright enough for dark text
-                if (brightness >= 0.5) {
-                  return "has-text-dark";
-                } else {
-                  return "has-text-light";
-                }
-              }
-              project.transactionGroups.forEach(group => {
-                const grouped = !!group.groupTitle;
-                const groupAmount = group.transactions.reduce((acc, tr) => acc + Number.parseFloat(tr.amount), 0);
-                group.transactions.forEach((transaction, i, arr) => {
-                  const trClassArray = [];
-                  if (grouped) {
-                    if (i === 0) {
-                      trClassArray.push('transactionGroupTop');
-                    }
-                    if (i === arr.length - 1) {
-                      trClassArray.push('transactionGroupBottom');
-                    }
-                    trClassArray.push('transactionGroupContent');
-                  }
-                  const isNegative = transaction.transactionType === 'Withdraw';
-                  const amount = transaction.amount.substring(isNegative ? 0 : 1) +
-                    (currencyToSign[transaction.currencyCode] ? currencyToSign[transaction.currencyCode] : ' ' + transaction.currencyCode)
-                    + (grouped ? ` (${groupAmount})` : '');
-                  const sourceColor = stringToColour(transaction.sourceName);
-                  const destinationColor = stringToColour(transaction.destinationName);
-              %>
-            <tr class="<%= trClassArray.join(' ') %>">
-              <td>
-                <%= group.groupTitle %>
-              </td>
-              <td>
-                <%= transaction.date.toLocaleString("ru-RU", {timeZone: 'Europe/Moscow' }) %>
-              </td>
-              <td>
-                <%= transaction.categoryName %>
-              </td>
-              <td style="background-color: <%= sourceColor %>">
-                <span class="<%= darkOrLight(sourceColor) %>">
-                  <%= transaction.sourceName %>
-                </span>
-              </td>
-              <td style="background-color: <%= destinationColor %>">
-                <span class="<%= darkOrLight(destinationColor) %>">
-                  <%= transaction.destinationName %>
-                </span>
-              </td>
-              <td class="<%= isNegative ? 'has-background-danger' : 'has-background-success' %>">
-                <%= amount %>
-              </td>
-              <td>
-                <%= transaction.budgetName %>
-              </td>
-              <td>
-                <% transaction.tags.forEach(tag => {%>
-                <span class="tag is-medium" style="background-color: <%= stringToColour(tag) %>"><%= tag %></span>
-                <% }); %>
-              </td>
-              <td>
-
-              </td>
-            </tr>
-            <%
-                });
-              });
-            %>
-          </tbody>
-        </table>
-      </div>
-    </div>
+<%- include('../partials/top') %>
+<div class="columns">
+  <div class="column">
+    <h1 class="title"><%= project.name %></h1>
   </div>
-  <footer><%- include('../partials/footer') %></footer>
-</body>
+  <div class="column is-narrow">
+    <form action="<%= deleteLink %>" method="post">
+      <input type="submit" value="Удалить" class="button is-danger" />
+    </form>
+  </div>
+</div>
+<div class="box">
+  <div class="table-container">
+    <table class="table is-hoverable is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>Группа</th>
+          <th>Дата</th>
+          <th>Категория</th>
+          <th><abbr title="Счет-отправитель">СО</abbr></th>
+          <th><abbr title="Счет-получатель">СП</abbr></th>
+          <th>Сумма</th>
+          <th>Бюджет</th>
+          <th>Теги</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%
+        const currencyToSign = {
+          RUB: '₽',
+          USD: '$',
+          EUR: '€',
+          GBP: '£'
+        };
+        const currentAccount = project.account.fireflyAccount.name;
+        // https://stackoverflow.com/a/16348977
+        const stringToColour = (str) => {
+          let hash = 0;
+          for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+          }
+          let colour='#';
+          for (let i = 0; i < 3; i++) {
+            const value = (hash >> (i * 8)) & 0xFF;
+            colour += ('00' + value.toString(16)).substr(-2);
+          }
+          return colour;
+        };
+        // https://stackoverflow.com/a/5624139
+        const hexToRgb = (hex) => {
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+          return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+          } : null;
+        }
+        // https://stackoverflow.com/a/9664560
+        const darkOrLight = (hex) => {
+          const { r, g, b } = hexToRgb(hex);
+          let brightness;
+          brightness = (r * 299) + (g * 587) + (b * 114);
+          brightness = brightness / 255000;
+          // values range from 0 to 1
+          // anything greater than 0.5 should be bright enough for dark text
+          if (brightness >= 0.5) {
+            return "has-text-dark";
+          } else {
+            return "has-text-light";
+          }
+        }
+        project.transactionGroups.forEach(group => {
+          const grouped = !!group.groupTitle;
+          const groupAmount = group.transactions.reduce((acc, tr) => acc + Number.parseFloat(tr.amount), 0);
+          group.transactions.forEach((transaction, i, arr) => {
+            const trClassArray = [];
+            if (grouped) {
+              if (i === 0) {
+                trClassArray.push('transactionGroupTop');
+              }
+              if (i === arr.length - 1) {
+                trClassArray.push('transactionGroupBottom');
+              }
+              trClassArray.push('transactionGroupContent');
+            }
+            const isNegative = transaction.transactionType === 'Withdraw';
+            const amount = transaction.amount.substring(isNegative ? 0 : 1) +
+              (currencyToSign[transaction.currencyCode] ? currencyToSign[transaction.currencyCode] : ' ' + transaction.currencyCode)
+              + (grouped ? ` (${groupAmount})` : '');
+            const sourceColor = stringToColour(transaction.sourceName);
+            const destinationColor = stringToColour(transaction.destinationName);
+        %>
+        <tr class="<%= trClassArray.join(' ') %>">
+          <td>
+            <%= group.groupTitle %>
+          </td>
+          <td>
+            <%= transaction.date.toLocaleString("ru-RU", {timeZone: 'Europe/Moscow' }) %>
+          </td>
+          <td>
+            <%= transaction.categoryName %>
+          </td>
 
-</html>
+          <% if (currentAccount !== transaction.sourceName) { %>
+          <td style="background-color: <%= sourceColor %>">
+            <span class="<%= darkOrLight(sourceColor) %>">
+              <%= transaction.sourceName %>
+            </span>
+          </td>
+          <% } else { %>
+          <td>
+            <span>
+              <%= transaction.sourceName %>
+            </span>
+          </td>
+          <% } %>
+
+          <% if (currentAccount !== transaction.destinationName) { %>
+          <td style="background-color: <%= destinationColor %>">
+            <span class="<%= darkOrLight(destinationColor) %>">
+              <%= transaction.destinationName %>
+            </span>
+          </td>
+          <% } else { %>
+          <td>
+            <span>
+              <%= transaction.destinationName %>
+            </span>
+          </td>
+          <% } %>
+
+          <td class="<%= isNegative ? 'has-background-danger' : 'has-background-success' %>">
+            <%= amount %>
+          </td>
+          <td>
+            <%= transaction.budgetName %>
+          </td>
+          <td>
+            <% transaction.tags.forEach(tag => {%>
+            <span class="tag is-medium" style="background-color: <%= stringToColour(tag) %>"><%= tag %></span>
+            <% }); %>
+          </td>
+          <td>
+
+          </td>
+        </tr>
+        <%
+          });
+        });
+        %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/bottom') %>

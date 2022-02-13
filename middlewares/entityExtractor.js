@@ -37,6 +37,7 @@ export const getProjectById =
       owner: req.user.id,
       _id: field ? req.body[field] : req.params[path],
     })
+      .populate("account", "fireflyAccount.name")
       .then((project) => {
         req.project = project;
         next();
