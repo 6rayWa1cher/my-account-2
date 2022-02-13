@@ -9,9 +9,11 @@ const ProjectSchema = new mongoose.Schema({
   account: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
   transactionGroups: [
     {
+      groupId: String,
       groupTitle: String,
       transactions: [
         {
+          transactionId: String,
           transactionType: String,
           date: Date,
           amount: String,
@@ -23,6 +25,7 @@ const ProjectSchema = new mongoose.Schema({
           foreignCurrencyId: String,
           foreignCurrencyCode: String,
           budgetId: String,
+          budgetName: String,
           categoryId: String,
           categoryName: String,
           sourceId: String,

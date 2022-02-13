@@ -3,7 +3,7 @@ import Account from "../models/account.js";
 import { getAllAccounts } from "../middlewares/entityExtractor.js";
 import { body, validationResult } from "express-validator";
 import { getAccountBasicInfoFromNameApi } from "../api/firefly3.js";
-import { strategiesMap } from "../services/importStrategies.js";
+import { strategiesMap } from "../services/projectManager.js";
 const router = express.Router();
 
 const renderPageAccounts = [

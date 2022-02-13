@@ -7,7 +7,7 @@ import {
   getAllProjects,
 } from "../middlewares/entityExtractor.js";
 import Project from "../models/project.js";
-import { strategiesMap } from "../services/importStrategies.js";
+import { strategiesMap } from "../services/projectManager.js";
 const router = express.Router();
 
 const renderPageProjects = [

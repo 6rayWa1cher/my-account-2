@@ -2,6 +2,7 @@ import csv from "csv-parser";
 import Project from "../models/project.js";
 import { bufferToStream } from "../utils/node.js";
 import moment from "moment-timezone";
+import { nanoid } from "nanoid";
 
 const normalizeAmount = (amount) => (amount[0] === "-" ? amount : "-" + amount);
 
@@ -24,6 +25,7 @@ export const importTinkoff = (account, buffer) =>
             const normalizedAmount = normalizeAmount(amount);
             const transactionType = amount[0] === "-" ? "Withdraw" : "Deposit";
             const transaction = {
+              transactionId: nanoid(),
               transactionType,
               date: moment.tz(
                 data["Дата операции"],

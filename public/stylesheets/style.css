@@ -1,3 +1,15 @@
 header {
   border-bottom: 1px solid #ccc;
 }
+
+.transactionGroupTop {
+  border-top: 3px solid #000;
+}
+
+.transactionGroupContent {
+  background-color: #3e8ed0;
+}
+
+.transactionGroupBottom {
+  border-bottom: 3px solid #000;
+}
