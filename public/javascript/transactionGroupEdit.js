@@ -1,9 +1,10 @@
 "use strict";
 
-const form = document.getElementById("edit-form");
-const data = JSON.parse(document.getElementById("edit-form-data").innerText);
-const transactionTemplate = document.getElementById("transaction-template");
-const addNewTransaction = ({ transaction = {}, copyNode = false }) => {
+const addNewTransaction = (
+  form,
+  transactionTemplate,
+  { transaction = {}, copyNode = false }
+) => {
   const newIndex = form.querySelectorAll(".transaction").length;
   const newNode = document.createElement("div");
   newNode.classList.add("transaction");
@@ -36,39 +37,62 @@ const addNewTransaction = ({ transaction = {}, copyNode = false }) => {
   form.appendChild(newNode);
   return newNode;
 };
-const groupNameInput = form.querySelector("input[name='groupTitle']");
-document.getElementById("append-button").addEventListener("click", () => {
-  const copyNode = form.querySelector(".transaction:last-of-type");
-  const firstCopy = form.querySelectorAll(".transaction").length === 1;
-  if (firstCopy) {
-    groupNameInput.setAttribute(
-      "value",
-      copyNode.querySelector(".transaction-description").value
-    );
-  }
-  const newNode = addNewTransaction({
-    copyNode,
-  });
-  if (firstCopy) {
-    copyNode.querySelector(".transaction-amount").value /= 2;
-    newNode.querySelector(".transaction-amount").value = copyNode.querySelector(
-      ".transaction-amount"
-    ).value;
 
-    const foreignAmount = copyNode.querySelector(
-      ".transaction-foreignAmount"
-    ).value;
-    if (foreignAmount) {
-      copyNode.querySelector(".transaction-foreignAmount").value =
-        foreignAmount / 2;
-      newNode.querySelector(".transaction-foreignAmount").value =
-        foreignAmount / 2;
+// https://stackoverflow.com/a/11832950
+const roundAmount = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
+
+const splitAmount = (originalNode, copiedNode) => {
+  const fullValue = originalNode.value;
+  originalNode.value = roundAmount(fullValue / 2);
+  copiedNode.value = fullValue - originalNode.value;
+};
+
+const getFormContext = () => {
+  const form = document.getElementById("edit-form");
+  const data = JSON.parse(document.getElementById("edit-form-data").innerText);
+  const transactionTemplate = document.getElementById("transaction-template");
+  return { form, data, transactionTemplate };
+};
+
+(() => {
+  const { form, transactionTemplate } = getFormContext();
+  const groupNameInput = form.querySelector("input[name='groupTitle']");
+  document.getElementById("append-button").addEventListener("click", () => {
+    const copyNode = form.querySelector(".transaction:last-of-type");
+    const firstCopy = form.querySelectorAll(".transaction").length === 1;
+    if (firstCopy) {
+      groupNameInput.setAttribute(
+        "value",
+        copyNode.querySelector(".transaction-description").value
+      );
     }
-  }
-});
+    const newNode = addNewTransaction(form, transactionTemplate, {
+      copyNode,
+    });
+    if (firstCopy) {
+      splitAmount(
+        copyNode.querySelector(".transaction-amount"),
+        newNode.querySelector(".transaction-amount")
+      );
 
-data.transactions.forEach((transaction) =>
-  addNewTransaction({
-    transaction,
-  })
-);
+      const foreignAmount = copyNode.querySelector(
+        ".transaction-foreignAmount"
+      ).value;
+      if (foreignAmount) {
+        splitAmount(
+          copyNode.querySelector(".transaction-foreignAmount"),
+          newNode.querySelector(".transaction-foreignAmount")
+        );
+      }
+    }
+  });
+})();
+
+(() => {
+  const { form, data, transactionTemplate } = getFormContext();
+  data.transactions.forEach((transaction) => {
+    addNewTransaction(form, transactionTemplate, {
+      transaction,
+    });
+  });
+})();
