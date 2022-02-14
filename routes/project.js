@@ -8,7 +8,10 @@ import {
   getAllProjects,
 } from "../middlewares/entityExtractor.js";
 import Project from "../models/project.js";
-import { strategiesMap } from "../services/projectManager.js";
+import {
+  processAutomatizationRules,
+  strategiesMap,
+} from "../services/projectManager.js";
 const router = express.Router();
 
 const renderPageProjects = [
@@ -43,6 +46,7 @@ router.post(
       const { func } = strategiesMap[req.account.importStrategy];
       const constructed = await func(req.account, req.files.upload.data);
       constructed.transactionGroups.sort((a, b) => b.date - a.date);
+      await processAutomatizationRules(constructed, req.account);
       const projectName = `Проект счета '${
         req.account.fireflyAccount.name
       }' от ${new Date().toLocaleString("ru-RU")}`;

@@ -32,6 +32,7 @@ const ProjectSchema = new mongoose.Schema({
           destinationName: String,
           tags: [String],
           internalReference: String,
+          generated: Boolean,
         },
       ],
     },
