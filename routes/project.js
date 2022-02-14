@@ -1,5 +1,6 @@
 import express from "express";
 import { body, validationResult } from "express-validator";
+import { eraseEmptyStrings } from "../middlewares/body.js";
 import {
   getAccountById,
   getProjectById,
@@ -80,18 +81,25 @@ router.delete("/:id", getProjectById(), (req, res, next) => {
   });
 });
 
+const getGroupFromProject = (req, res, next) => {
+  if (!req.project) {
+    next(new Error("not found"));
+  }
+  const group = req.project.transactionGroups.find(
+    (g) => g._id == req.params.group
+  );
+  if (!group) {
+    next(new Error("not found"));
+  }
+  req.group = group;
+  next();
+};
+
 const renderTransactionGroupEdit = [
   getProjectById(),
+  getGroupFromProject,
   (req, res) => {
-    if (!req.project) {
-      throw new Error("not found");
-    }
-    const group = req.project.transactionGroups.find(
-      (g) => g._id == req.params.group
-    );
-    if (!group) {
-      throw new Error("not found");
-    }
+    const group = req.group;
     res.render("pages/transactionGroupEdit", {
       group,
       putLink: `/projects/${req.project._id}/${group._id}?_method=PUT`,
@@ -102,22 +110,33 @@ const renderTransactionGroupEdit = [
 
 router.get("/:id/:group", renderTransactionGroupEdit);
 
-router.put("/:id/:group", getProjectById(), (req, res) => {
-  if (!req.project) {
-    throw new Error("not found");
+router.put(
+  "/:id/:group",
+  eraseEmptyStrings(),
+  getProjectById(),
+  getGroupFromProject,
+  async (req, res, next) => {
+    try {
+      const project = req.project;
+      const group = req.group;
+      const newGroup = req.body;
+
+      group.groupTitle = newGroup.groupTitle;
+      group.transactions = newGroup.transactions;
+      group.transactions.forEach((transaction, i) => {
+        transaction.amount = `-${transaction.amount}`;
+        transaction.tags = newGroup.transactions[i].tags?.split?.(",");
+      });
+      project.lastUpdatedAt = new Date();
+
+      await project.save();
+
+      res.redirect(`/projects/${project._id}`);
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
   }
-  const group = req.project.transactionGroups.find(
-    (g) => g._id == req.params.group
-  );
-  if (!group) {
-    throw new Error("not found");
-  }
-  console.log(req.body);
-  res.render("pages/transactionGroupEdit", {
-    group,
-    putLink: `/projects/${req.project._id}/${group._id}?_method=PUT`,
-    deleteLink: `/projects/${req.project._id}/${group._id}?_method=DELETE`,
-  });
-});
+);
 
 export default router;

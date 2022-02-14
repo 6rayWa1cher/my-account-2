@@ -140,8 +140,13 @@
             <%= transaction.budgetName %>
           </td>
           <td>
-            <% transaction.tags.forEach(tag => {%>
-            <span class="tag is-medium" style="background-color: <%= stringToColour(tag) %>"><%= tag %></span>
+            <% transaction.tags.forEach(tag => {
+                const color = stringToColour(tag);
+                const textColor = darkOrLight(color);
+              %>
+            <span class="tag is-medium <%= textColor %>" style="background-color: <%= color %>">
+              <%= tag %>
+            </span>
             <% }); %>
           </td>
           <td>

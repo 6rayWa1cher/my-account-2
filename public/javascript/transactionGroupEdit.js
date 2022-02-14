@@ -34,19 +34,37 @@ const addNewTransaction = ({ transaction = {}, copyNode = false }) => {
       }
     });
   form.appendChild(newNode);
+  return newNode;
 };
-const groupNameInput = form.querySelector("input[name='groupName']");
+const groupNameInput = form.querySelector("input[name='groupTitle']");
 document.getElementById("append-button").addEventListener("click", () => {
   const copyNode = form.querySelector(".transaction:last-of-type");
-  if (!groupNameInput.getAttribute("value")) {
+  const firstCopy = form.querySelectorAll(".transaction").length === 1;
+  if (firstCopy) {
     groupNameInput.setAttribute(
       "value",
       copyNode.querySelector(".transaction-description").value
     );
   }
-  addNewTransaction({
+  const newNode = addNewTransaction({
     copyNode,
   });
+  if (firstCopy) {
+    copyNode.querySelector(".transaction-amount").value /= 2;
+    newNode.querySelector(".transaction-amount").value = copyNode.querySelector(
+      ".transaction-amount"
+    ).value;
+
+    const foreignAmount = copyNode.querySelector(
+      ".transaction-foreignAmount"
+    ).value;
+    if (foreignAmount) {
+      copyNode.querySelector(".transaction-foreignAmount").value =
+        foreignAmount / 2;
+      newNode.querySelector(".transaction-foreignAmount").value =
+        foreignAmount / 2;
+    }
+  }
 });
 
 data.transactions.forEach((transaction) =>

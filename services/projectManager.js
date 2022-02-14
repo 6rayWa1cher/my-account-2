@@ -68,6 +68,7 @@ export const importTinkoff = (account, buffer) =>
           resolve({
             owner: account.owner,
             createdAt: new Date(),
+            lastUpdatedAt: new Date(),
             status: "created",
             account: account._id,
             transactionGroups,
