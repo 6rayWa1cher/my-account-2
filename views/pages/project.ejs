@@ -17,6 +17,7 @@
           <th>Группа</th>
           <th>Дата</th>
           <th>Категория</th>
+          <th>Описание</th>
           <th><abbr title="Счет-отправитель">СО</abbr></th>
           <th><abbr title="Счет-получатель">СП</abbr></th>
           <th>Сумма</th>
@@ -96,12 +97,14 @@
             <%= group.groupTitle %>
           </td>
           <td>
-            <%= transaction.date.toLocaleString("ru-RU", {timeZone: 'Europe/Moscow' }) %>
+            <%= group.date.toLocaleString("ru-RU", {timeZone: 'Europe/Moscow' }) %>
           </td>
           <td>
             <%= transaction.categoryName %>
           </td>
-
+          <td>
+            <%= transaction.description %>
+          </td>
           <% if (currentAccount !== transaction.sourceName) { %>
           <td style="background-color: <%= sourceColor %>">
             <span class="<%= darkOrLight(sourceColor) %>">
@@ -142,7 +145,11 @@
             <% }); %>
           </td>
           <td>
-
+            <a href="<%= `/projects/${project._id}/${group._id}` %>" class="button">
+              <span class="icon">
+                <i class="fas fa-solid fa-pen-to-square"></i>
+              </span>
+            </a>
           </td>
         </tr>
         <%

@@ -2,7 +2,6 @@ import csv from "csv-parser";
 import Project from "../models/project.js";
 import { bufferToStream } from "../utils/node.js";
 import moment from "moment-timezone";
-import { nanoid } from "nanoid";
 
 const normalizeAmount = (amount) => (amount[0] === "-" ? amount : "-" + amount);
 
@@ -22,26 +21,22 @@ export const importTinkoff = (account, buffer) =>
         .on("data", (data) => {
           try {
             const amount = data["Сумма операции"];
+            const currencyCode = data["Валюта операции"];
+            const paymentCurrencyCode = data["Валюта платежа"];
             const normalizedAmount = normalizeAmount(amount);
             const transactionType = amount[0] === "-" ? "Withdraw" : "Deposit";
+
             const transaction = {
-              transactionId: nanoid(),
               transactionType,
-              date: moment.tz(
-                data["Дата операции"],
-                "DD.MM.YYYY HH:mm:ss",
-                "Europe/Moscow"
-              ),
-              processDate: ((field) =>
-                field && moment(field, "DD.MM.YYYY", "Europe/Moscow"))(
-                data["Дата платежа"]
-              ),
               amount: normalizedAmount,
-              currencyCode: data["Валюта операции"],
-              foreignAmount: data["Сумма платежа"],
-              foreignCurrencyCode: data["Валюта платежа"],
+              currencyCode,
               description: data["Описание"],
             };
+
+            if (paymentCurrencyCode !== currencyCode) {
+              transaction.foreignAmount = data["Сумма платежа"];
+              transaction.foreignCurrencyCode = paymentCurrencyCode;
+            }
             if (transactionType === "Withdraw") {
               transaction.sourceId = account.fireflyAccount.id;
               transaction.sourceName = account.fireflyAccount.name;
@@ -53,6 +48,15 @@ export const importTinkoff = (account, buffer) =>
             }
             const transactionGroup = {
               groupTitle: null,
+              date: moment.tz(
+                data["Дата операции"],
+                "DD.MM.YYYY HH:mm:ss",
+                "Europe/Moscow"
+              ),
+              processDate: ((field) =>
+                field && moment(field, "DD.MM.YYYY", "Europe/Moscow"))(
+                data["Дата платежа"]
+              ),
               transactions: [transaction],
             };
             transactionGroups.push(transactionGroup);

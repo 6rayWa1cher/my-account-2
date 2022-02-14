@@ -13,3 +13,8 @@ header {
 .transactionGroupBottom {
   border-bottom: 3px solid #000;
 }
+
+:required,
+.required {
+  background: hsl(206, 70%, 96%);
+}

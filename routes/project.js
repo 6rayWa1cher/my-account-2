@@ -34,13 +34,14 @@ router.post(
     if (!validationErrors.isEmpty()) {
       return next();
     }
-    if (!req.files.upload || req.files.upload.size === 0) {
+    if (!req.files?.upload || req.files?.upload?.size === 0) {
       req.processError = new Error("File is missing of not uploaded");
       return next();
     }
     try {
       const { func } = strategiesMap[req.account.importStrategy];
       const constructed = await func(req.account, req.files.upload.data);
+      constructed.transactionGroups.sort((a, b) => b.date - a.date);
       const projectName = `Проект счета '${
         req.account.fireflyAccount.name
       }' от ${new Date().toLocaleString("ru-RU")}`;
@@ -76,6 +77,46 @@ router.delete("/:id", getProjectById(), (req, res, next) => {
   Project.findByIdAndDelete(req.params.id, (err) => {
     if (err) next(err);
     res.redirect("/projects");
+  });
+});
+
+const renderTransactionGroupEdit = [
+  getProjectById(),
+  (req, res) => {
+    if (!req.project) {
+      throw new Error("not found");
+    }
+    const group = req.project.transactionGroups.find(
+      (g) => g._id == req.params.group
+    );
+    if (!group) {
+      throw new Error("not found");
+    }
+    res.render("pages/transactionGroupEdit", {
+      group,
+      putLink: `/projects/${req.project._id}/${group._id}?_method=PUT`,
+      deleteLink: `/projects/${req.project._id}/${group._id}?_method=DELETE`,
+    });
+  },
+];
+
+router.get("/:id/:group", renderTransactionGroupEdit);
+
+router.put("/:id/:group", getProjectById(), (req, res) => {
+  if (!req.project) {
+    throw new Error("not found");
+  }
+  const group = req.project.transactionGroups.find(
+    (g) => g._id == req.params.group
+  );
+  if (!group) {
+    throw new Error("not found");
+  }
+  console.log(req.body);
+  res.render("pages/transactionGroupEdit", {
+    group,
+    putLink: `/projects/${req.project._id}/${group._id}?_method=PUT`,
+    deleteLink: `/projects/${req.project._id}/${group._id}?_method=DELETE`,
   });
 });
 
