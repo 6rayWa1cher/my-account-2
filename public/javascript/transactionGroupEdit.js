@@ -5,36 +5,33 @@ const addNewTransaction = (
   transactionTemplate,
   { transaction = {}, copyNode = false }
 ) => {
-  const newIndex = form.querySelectorAll(".transaction").length;
+  const newIndex = $(".transaction", form).length;
   const newNode = document.createElement("div");
-  newNode.classList.add("transaction");
-  newNode.appendChild(
-    (copyNode ? copyNode : transactionTemplate.content).cloneNode(true)
-  );
-  newNode.querySelector(".divider").innerHTML = `Транзакция #${newIndex + 1}`;
-  newNode
-    .querySelectorAll(
-      "input[class*='transaction-'], select[class*='transaction-']"
-    )
-    .forEach((node) => {
-      const classPrefix = "transaction-";
-      const field = [...node.classList]
-        .find((c) => c.startsWith(classPrefix))
-        .substring(classPrefix.length);
-      node.setAttribute("name", `transactions[${newIndex}][${field}]`);
-      const value = transaction[field];
-      if (!copyNode && !!value) {
-        if (field === "amount" || field === "foreignAmount") {
-          node.setAttribute("value", value.substring(1).replace(",", "."));
-        } else if (node.tagName.toLowerCase() === "select") {
-          const subnode = node.querySelector(`option[value='${value}']`);
-          if (subnode) subnode.setAttribute("selected", true);
-        } else {
-          node.setAttribute("value", value);
-        }
+  $(newNode)
+    .addClass("transaction")
+    .append((copyNode || transactionTemplate).contents().clone())
+    .attr("id", `transaction-${newIndex}`);
+  $(".divider", newNode).text(`Транзакция #${newIndex + 1}`);
+  $("[class*='transaction-']", newNode).each(function () {
+    const classPrefix = "transaction-";
+    const field = $(this)
+      .attr("class")
+      .split(/\s+/)
+      .find((c) => c.startsWith(classPrefix))
+      .substring(classPrefix.length);
+    $(this).attr("name", `transactions[${newIndex}][${field}]`);
+    const value = transaction[field];
+    if (!copyNode && !!value) {
+      if (field === "amount" || field === "foreignAmount") {
+        $(this).attr("value", value.substring(1).replace(".", ","));
+      } else if ($(this).prop("tagName").toLowerCase() === "select") {
+        $(`option[value='${value}']`, this).attr("selected", true);
+      } else {
+        $(this).attr("value", value);
       }
-    });
-  form.appendChild(newNode);
+    }
+  });
+  $(form).append(newNode);
   return newNode;
 };
 
@@ -42,57 +39,43 @@ const addNewTransaction = (
 const roundAmount = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
 
 const splitAmount = (originalNode, copiedNode) => {
-  const fullValue = originalNode.value;
-  originalNode.value = roundAmount(fullValue / 2);
-  copiedNode.value = fullValue - originalNode.value;
+  const fullValue = originalNode.val();
+  if (!fullValue) return;
+  originalNode.val(roundAmount(fullValue / 2));
+  copiedNode.val(fullValue - originalNode.val());
 };
 
-const getFormContext = () => {
-  const form = document.getElementById("edit-form");
-  const data = JSON.parse(document.getElementById("edit-form-data").innerText);
-  const transactionTemplate = document.getElementById("transaction-template");
-  return { form, data, transactionTemplate };
-};
+$(document).ready(function () {
+  JSON.parse($("#edit-form-data").text()).transactions.forEach(
+    (transaction) => {
+      addNewTransaction($("#edit-form"), $("#transaction-template"), {
+        transaction,
+      });
+    }
+  );
 
-(() => {
-  const { form, transactionTemplate } = getFormContext();
-  const groupNameInput = form.querySelector("input[name='groupTitle']");
-  document.getElementById("append-button").addEventListener("click", () => {
-    const copyNode = form.querySelector(".transaction:last-of-type");
-    const firstCopy = form.querySelectorAll(".transaction").length === 1;
+  $("#append-button").click(function () {
+    const form = $("#edit-form");
+    const copyNode = $(".transaction:last-of-type", form);
+    const firstCopy = $(".transaction", form).length === 1;
     if (firstCopy) {
-      groupNameInput.setAttribute(
-        "value",
-        copyNode.querySelector(".transaction-description").value
+      $("input[name='groupTitle']", form).val(
+        $(".transaction-description", copyNode).val()
       );
     }
-    const newNode = addNewTransaction(form, transactionTemplate, {
+    $("#edit-form");
+    const newNode = addNewTransaction(form, $("#transaction-template"), {
       copyNode,
     });
     if (firstCopy) {
       splitAmount(
-        copyNode.querySelector(".transaction-amount"),
-        newNode.querySelector(".transaction-amount")
+        $(".transaction-amount", copyNode),
+        $(".transaction-amount", newNode)
       );
-
-      const foreignAmount = copyNode.querySelector(
-        ".transaction-foreignAmount"
-      ).value;
-      if (foreignAmount) {
-        splitAmount(
-          copyNode.querySelector(".transaction-foreignAmount"),
-          newNode.querySelector(".transaction-foreignAmount")
-        );
-      }
+      splitAmount(
+        $(".transaction-foreignAmount", copyNode),
+        $(".transaction-foreignAmount", newNode)
+      );
     }
   });
-})();
-
-(() => {
-  const { form, data, transactionTemplate } = getFormContext();
-  data.transactions.forEach((transaction) => {
-    addNewTransaction(form, transactionTemplate, {
-      transaction,
-    });
-  });
-})();
+});
