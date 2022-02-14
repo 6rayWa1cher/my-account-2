@@ -1,0 +1,50 @@
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.1/lib/codemirror.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.1/mode/javascript/javascript.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.1/addon/hint/show-hint.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.1/addon/hint/javascript-hint.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.1/addon/edit/closebrackets.js"></script>
+<div class="field">
+  <label class="label">Название автоматизации</label>
+  <div class="control">
+    <input class="input" type="text" placeholder="Text input" name="note" />
+  </div>
+</div>
+<div class="field">
+  <label class="label">Область действия</label>
+  <div class="control">
+    <div class="select">
+      <select name="scope">
+        <% Object.entries(scopesMap).forEach(([value, name]) => {
+            if (rule.scope === value) {
+          %>
+        <option value="<%= value %>" selected><%= name %></option>
+        <% } else { %>
+        <option value="<%= value %>"><%= name %></option>
+        <% }}); %>
+      </select>
+    </div>
+  </div>
+</div>
+<div class="field">
+  <label class="label">Триггер</label>
+  <div class="control">
+    <textarea name="trigger"><%= rule.trigger ?? '' %></textarea>
+  </div>
+</div>
+<div class="field">
+  <label class="label">Действие</label>
+  <div class="control">
+    <textarea name="action"><%= rule.trigger ?? '' %></textarea>
+  </div>
+</div>
+<div class="field is-grouped">
+  <div class="control">
+    <button type="submit" class="button is-link">Отправить</button>
+  </div>
+  <div class="control">
+    <button type="reset" class="button is-link is-light">
+      Очистить
+    </button>
+  </div>
+</div>
+<script src="/javascript/ruleForm.js"></script>

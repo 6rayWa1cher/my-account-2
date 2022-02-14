@@ -1,0 +1,20 @@
+<%- include('../partials/top') %>
+<div class="columns">
+  <div class="column">
+    <h1 class="title">Правило автоматизации <%= rule._id %></h1>
+  </div>
+  <div class="column is-narrow">
+    <button id="append-button" class="button is-light">Добавить</button>
+  </div>
+  <div class="column is-narrow">
+    <form action="<%= deleteLink %>" method="post">
+      <input type="submit" value="Удалить" class="button is-danger" />
+    </form>
+  </div>
+</div>
+<div class="box">
+  <form action="<%= putLink %>" method="post" id="edit-form">
+    <%- include('../partials/ruleForm') %>
+  </form>
+</div>
+<%- include('../partials/bottom') %>

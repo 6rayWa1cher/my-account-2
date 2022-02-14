@@ -169,7 +169,7 @@ export const processAutomatizationRules = async (project, account) => {
     .map(remapRule);
 
   const vm = new VM({
-    // timeout: 1000,
+    timeout: 1000,
     allowAsync: false,
     sandbox: { splitTransaction },
   });
@@ -208,4 +208,9 @@ export const strategiesMap = {
     func: importTinkoff,
     name: "Тинькофф",
   },
+};
+
+export const scopesMap = {
+  group: "Группа транзакций",
+  transaction: "Транзакция",
 };

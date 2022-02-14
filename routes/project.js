@@ -19,7 +19,7 @@ const renderPageProjects = [
   getAllAccounts,
   (req, res) =>
     res.render("pages/projects", {
-      projects: req.projects,
+      projects: req.projects.sort((a, b) => b.lastUpdatedAt - a.lastUpdatedAt),
       accounts: req.accounts,
       validationErrors: validationResult(req),
       processError: req.processError,
