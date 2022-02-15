@@ -3,6 +3,7 @@ import Account from "../models/account.js";
 import {
   getAllAccounts,
   getAccountById,
+  getRuleFromAccountById,
 } from "../middlewares/entityExtractor.js";
 import { body, validationResult } from "express-validator";
 import { getAccountBasicInfoFromNameApi } from "../api/firefly3.js";
@@ -77,12 +78,43 @@ const renderPageAccount = [
 
 router.get("/:id", renderPageAccount);
 
-router.post(
-  "/:id/rule",
+router.delete("/:id", getAccountById(), (req, res, next) => {
+  if (!req.account) {
+    throw new Error("not found");
+  }
+  Account.findByIdAndDelete(req.params.id, (err) => {
+    if (err) next(err);
+    res.redirect("/accounts");
+  });
+});
+
+router.get(
+  "/:id/:rule",
+  getAccountById(),
+  getRuleFromAccountById(),
+  (req, res) => {
+    if (!req.rule) {
+      throw new Error("not found");
+    }
+    res.render("pages/ruleEdit", {
+      rule: req.rule,
+      scopesMap,
+      deleteLink: `/accounts/${req.account._id}/${req.rule._id}?_method=DELETE`,
+      putLink: `/accounts/${req.account._id}/${req.rule._id}?_method=PUT`,
+    });
+  }
+);
+
+const ruleValidation = [
   body("trigger").exists().isString(),
   body("action").exists().isString(),
   body("note").exists().isString().isLength({ min: 3, max: 30 }),
   body("scope").exists().isString().isIn(Object.keys(scopesMap)),
+];
+
+router.post(
+  "/:id/rule",
+  ruleValidation,
   getAccountById(),
   async (req, res, next) => {
     try {
@@ -104,14 +136,54 @@ router.post(
   }
 );
 
-router.delete("/:id", getAccountById(), (req, res, next) => {
-  if (!req.account) {
-    throw new Error("not found");
+router.put(
+  "/:id/:rule",
+  ruleValidation,
+  getAccountById(),
+  getRuleFromAccountById(),
+  async (req, res, next) => {
+    try {
+      const validationErrors = validationResult(req);
+      if (!validationErrors.isEmpty()) {
+        return next();
+      }
+      if (!req.rule) {
+        throw new Error("not found");
+      }
+
+      const rule = req.rule;
+      rule.trigger = req.body.trigger;
+      rule.action = req.body.action;
+      rule.note = req.body.note;
+      rule.scope = req.body.scope;
+
+      await req.account.save();
+      res.redirect(`/accounts/${req.account._id}`);
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
   }
-  Account.findByIdAndDelete(req.params.id, (err) => {
-    if (err) next(err);
-    res.redirect("/accounts");
-  });
-});
+);
+
+router.delete(
+  "/:id/:rule",
+  getAccountById(),
+  getRuleFromAccountById(),
+  async (req, res, next) => {
+    try {
+      if (!req.rule) {
+        throw new Error("not found");
+      }
+      req.account.automatizationRules = req.account.automatizationRules.filter(
+        (r) => r._id !== req.read._id
+      );
+      await req.account.save();
+      res.redirect(`/${req.account._id}`);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 export default router;

@@ -14,7 +14,7 @@
 </div>
 <div class="box">
   <form action="<%= putLink %>" method="post" id="edit-form">
-    <%- include('../partials/ruleForm') %>
+    <%- include('../partials/ruleForm', { rule }) %>
   </form>
 </div>
 <%- include('../partials/bottom') %>

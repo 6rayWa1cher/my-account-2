@@ -53,23 +53,30 @@ app.use("/accounts", ensureLogIn(), accountRouter);
 app.use("/projects", ensureLogIn(), projectRouter);
 
 app.use((req, res) => {
-  res.sendStatus(404);
+  try {
+    res.render("pages/errorPage", {
+      code: 404,
+      message: "Страница не найдена",
+    });
+  } catch (err2) {
+    res.status(500).json({ firstError: 404, secondError: err2.stack });
+  }
 });
 
 app.use(function (err, req, res, next) {
-  // if (req.renderOnError) {
-  // req.renderOnError({ error: err });
-  // } else {
   const isNotFound = ~err.message.indexOf("not found");
   const isCastError = ~err.message.indexOf("Cast to ObjectId failed");
   if (err.message && (isNotFound || isCastError)) {
     return next();
   }
 
-  console.log(err.stack);
+  console.error(err.stack);
 
-  res.status(500).json({ error: err.stack });
-  // }
+  try {
+    res.render("pages/errorPage", { code: 500, message: err.stack });
+  } catch (err2) {
+    res.status(500).json({ firstError: err.stack, secondError: err2.stack });
+  }
 });
 
 export default app;

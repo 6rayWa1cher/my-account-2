@@ -97,7 +97,7 @@
             <%= group.groupTitle %>
           </td>
           <td>
-            <%= group.date.toLocaleString("ru-RU", {timeZone: 'Europe/Moscow' }) %>
+            <%= group.date.toLocaleString("ru-RU", {timeZone: 'Europe/Moscow' }).substring(0, 5) %>
           </td>
           <td>
             <%= transaction.categoryName %>

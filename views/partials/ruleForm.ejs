@@ -6,7 +6,7 @@
 <div class="field">
   <label class="label">Название автоматизации</label>
   <div class="control">
-    <input class="input" type="text" placeholder="Text input" name="note" />
+    <input class="input" type="text" placeholder="Text input" name="note" value="<%= rule.note %>" />
   </div>
 </div>
 <div class="field">
@@ -34,7 +34,7 @@
 <div class="field">
   <label class="label">Действие</label>
   <div class="control">
-    <textarea name="action"><%= rule.trigger ?? '' %></textarea>
+    <textarea name="action"><%= rule.action ?? '' %></textarea>
   </div>
 </div>
 <div class="field is-grouped">
