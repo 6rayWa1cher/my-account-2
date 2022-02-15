@@ -32,6 +32,7 @@
     "node-fetch": "^3.2.0",
     "passport": "^0.5.2",
     "passport-oauth2": "^1.6.1",
+    "strip-bom-stream": "^5.0.0",
     "vm2": "^3.9.7"
   }
 }

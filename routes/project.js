@@ -58,7 +58,7 @@ router.post(
       res.redirect(`/projects/${saved._id}`);
     } catch (err) {
       req.processError = err;
-      console.error(err);
+      console.error(err.stack);
       next();
     }
   },

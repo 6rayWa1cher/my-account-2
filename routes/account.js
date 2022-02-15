@@ -28,7 +28,7 @@ router.get("/", renderPageAccounts);
 
 router.post(
   "/",
-  body("importStrategy").exists().isLength({ min: 5, max: 25 }),
+  body("importStrategy").exists().isIn(Object.keys(strategiesMap)),
   body("fireflyName").exists(),
   async (req, res, next) => {
     const validationErrors = validationResult(req);

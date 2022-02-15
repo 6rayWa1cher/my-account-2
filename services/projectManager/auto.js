@@ -7,7 +7,6 @@ const tryExecuteGroupScopeRule = (vm, rule, group) =>
 const tryExecuteTransactionScopeRule = (vm, rule, group, transaction) =>
   new Promise((resolve, reject) => {
     try {
-      // Object.assign(sandbox, { group, transaction });
       vm.setGlobals({ group, transaction });
       const triggerResult = vm.run(rule.triggerScript);
       if (triggerResult) {

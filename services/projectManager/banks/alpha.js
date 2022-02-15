@@ -84,6 +84,7 @@ export const importAlpha = (account, buffer) =>
               currencyCode: normalizeCurrency(data["Валюта"]),
               description: parsedDescription.description,
               transactionType,
+              internalReference: reference,
               generated: false,
             };
 
