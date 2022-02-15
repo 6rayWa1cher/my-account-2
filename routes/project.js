@@ -11,7 +11,7 @@ import Project from "../models/project.js";
 import {
   processAutomatizationRules,
   strategiesMap,
-} from "../services/projectManager.js";
+} from "../services/projectManager/index.js";
 const router = express.Router();
 
 const renderPageProjects = [

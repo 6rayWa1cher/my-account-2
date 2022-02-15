@@ -7,7 +7,7 @@ import {
 } from "../middlewares/entityExtractor.js";
 import { body, validationResult } from "express-validator";
 import { getAccountBasicInfoFromNameApi } from "../api/firefly3.js";
-import { strategiesMap, scopesMap } from "../services/projectManager.js";
+import { strategiesMap, scopesMap } from "../services/projectManager/index.js";
 const router = express.Router();
 
 const renderPageAccounts = [
