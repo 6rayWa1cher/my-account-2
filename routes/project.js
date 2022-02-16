@@ -8,6 +8,7 @@ import {
   getAllProjects,
 } from "../middlewares/entityExtractor.js";
 import Project from "../models/project.js";
+import { exportToFilefly3 } from "../services/projectManager/index.js";
 import {
   processAutomatizationRules,
   strategiesMap,
@@ -83,6 +84,58 @@ router.delete("/:id", getProjectById(), (req, res, next) => {
     if (err) next(err);
     res.redirect("/projects");
   });
+});
+
+router.get("/:id/export", getProjectById(), (req, res) => {
+  if (!req.project) {
+    throw new Error("not found");
+  }
+
+  const transfers = req.project.transactionGroups.filter(
+    (g) => g.transactionType === "Transfer"
+  );
+  const incomingTransferAccounts = [
+    ...new Set(
+      transfers.flatMap((g) => g.transactions).flatMap((t) => t.sourceName)
+    ),
+  ];
+  const outgoingTransferAccounts = [
+    ...new Set(
+      transfers.flatMap((g) => g.transactions).flatMap((t) => t.destinationName)
+    ),
+  ];
+
+  res.render("pages/projectExport", {
+    project: req.project,
+    incomingTransferAccounts,
+    outgoingTransferAccounts,
+    postLink: `/projects/${req.project._id}/export`,
+  });
+});
+
+router.post("/:id/export", getProjectById(), async (req, res, next) => {
+  try {
+    if (!req.project) {
+      throw new Error("not found");
+    }
+    const incomingTransferAccounts = Object.entries(req.body.incoming ?? {})
+      .filter(([, v]) => v === "on")
+      .map(([k]) => k);
+    const outgoingTransferAccounts = Object.entries(req.body.outgoing ?? {})
+      .filter(([, v]) => v === "on")
+      .map(([k]) => k);
+
+    const errors = await exportToFilefly3({
+      project: req.project,
+      incomingTransferAccounts: incomingTransferAccounts,
+      outgoingTransferAccounts: outgoingTransferAccounts,
+      accessToken: req.session.firefly.accessToken,
+    });
+
+    res.redirect(`/projects/${req.project._id}`);
+  } catch (err) {
+    next(err);
+  }
 });
 
 const getGroupFromProject = (req, res, next) => {
@@ -163,12 +216,5 @@ router.delete(
     }
   }
 );
-
-router.get("/:id/export", getProjectById(), (req, res) => {
-  if (!req.group) {
-    throw new Error("not found");
-  }
-  // const transfers = req.group.transactionGroups.filter(g => g.)
-});
 
 export default router;

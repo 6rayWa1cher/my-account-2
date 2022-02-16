@@ -22,6 +22,7 @@ const __dirname = path.resolve();
 
 db.init();
 app.set("view engine", "ejs");
+// app.set("view options", { closeDelimiter: '/>' });
 app.use(methodOverride("_method"));
 app.use(logger("dev"));
 app.use(json());
