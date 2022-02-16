@@ -1,5 +1,5 @@
 import { VM, VMScript } from "vm2";
-import _ from "lodash";
+import * as lib from "./lib.js";
 
 const tryExecuteGroupScopeRule = (vm, rule, group) =>
   tryExecuteTransactionScopeRule(vm, rule, group, null);
@@ -28,52 +28,6 @@ const remapRule = (r) => ({
   actionScript: new VMScript(wrapScript(r.action)),
 });
 
-const splitAmount = (num, shareProportion) => {
-  if (!num) return {};
-  const left = roundAmount(num * shareProportion);
-  const right = num <= left ? num - left : num;
-  return { left: "" + left, right: "" + right };
-};
-
-const splitTransaction = (
-  group,
-  transaction,
-  shareProportion,
-  newFields = {}
-) => {
-  const { left: leftAmount, right: rightAmount } = splitAmount(
-    Number.parseFloat(transaction.amount),
-    shareProportion
-  );
-  const { left: leftForeignAmount, right: rightForeignAmount } = splitAmount(
-    Number.parseFloat(transaction.foreignAmount),
-    shareProportion
-  );
-
-  transaction.amount = leftAmount;
-  transaction.foreignAmount = leftForeignAmount;
-
-  const newTransaction = {
-    ..._.pick(transaction, [
-      "transactionType",
-      "description",
-      "currencyCode",
-      "foreignCurrencyCode",
-      "budgetName",
-      "categoryName",
-      "sourceName",
-      "destinationName",
-      "tags",
-    ]),
-    amount: rightAmount,
-    foreignAmount: rightForeignAmount,
-    ...newFields,
-    generated: true,
-  };
-  group.transactions.push(newTransaction);
-  return newTransaction;
-};
-
 export const processAutomatizationRules = async (project, account) => {
   const groupScoped = account.automatizationRules
     .filter((r) => r.scope === "group")
@@ -86,7 +40,7 @@ export const processAutomatizationRules = async (project, account) => {
   const vm = new VM({
     timeout: 1000,
     allowAsync: false,
-    sandbox: { splitTransaction },
+    sandbox: { ...lib },
   });
 
   for (const group of project.transactionGroups) {

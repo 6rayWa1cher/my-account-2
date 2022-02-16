@@ -27,24 +27,6 @@
     </div>
   </div>
   <div class="field">
-    <label class="label">Тип транзакции</label>
-    <div class="control">
-      <div class="select">
-        <select class="transaction-transactionType" required>
-          <option value="Deposit">
-            Доход
-          </option>
-          <option value="Withdraw">
-            Расход
-          </option>
-          <option value="Transfer">
-            Перевод
-          </option>
-        </select>
-      </div>
-    </div>
-  </div>
-  <div class="field">
     <label class="label">Счет-отправитель</label>
     <div class="control">
       <input class="input transaction-sourceName" type="text" required>
@@ -116,6 +98,24 @@
       <div class="control">
         <!-- <input type="datetime-local" value="<%% (() => {const s = group.date.toISOString(); return s.substring(0, s.length - 1); })() %>"> -->
         <span><%= group.date.toLocaleString('ru-RU') %></span>
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Тип группы транзакций</label>
+      <div class="control">
+        <div class="select">
+          <select class="transactionType" required>
+            <option <%= group.transactionType === 'Deposit' ? 'selected' : '' %> value="Deposit">
+              Доход
+            </option>
+            <option <%= group.transactionType === 'Withdraw' ? 'selected' : '' %> value="Withdraw">
+              Расход
+            </option>
+            <option <%= group.transactionType === 'Transfer' ? 'selected' : '' %> value="Transfer">
+              Перевод
+            </option>
+          </select>
+        </div>
       </div>
     </div>
     <div id="edit-form-data" hidden>

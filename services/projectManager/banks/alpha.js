@@ -83,7 +83,6 @@ export const importAlpha = (account, buffer) =>
               amount: normalizeAmount(income - outcome),
               currencyCode: normalizeCurrency(data["Валюта"]),
               description: parsedDescription.description,
-              transactionType,
               internalReference: reference,
               generated: false,
             };
@@ -109,6 +108,7 @@ export const importAlpha = (account, buffer) =>
             const processDate = parsedDescription.processDate;
             const transactionGroup = {
               groupTitle: null,
+              transactionType,
               date: moment(date, "DD.MM.YYYY"),
               processDate: ((field) => field && moment(field, "DD.MM.YYYY"))(
                 processDate

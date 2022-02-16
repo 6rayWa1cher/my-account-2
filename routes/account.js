@@ -176,10 +176,10 @@ router.delete(
         throw new Error("not found");
       }
       req.account.automatizationRules = req.account.automatizationRules.filter(
-        (r) => r._id !== req.read._id
+        (r) => !r._id.equals(req.rule._id)
       );
       await req.account.save();
-      res.redirect(`/${req.account._id}`);
+      res.redirect(`/accounts/${req.account._id}`);
     } catch (err) {
       next(err);
     }

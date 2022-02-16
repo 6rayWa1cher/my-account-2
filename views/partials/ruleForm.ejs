@@ -15,9 +15,9 @@
     <div class="select">
       <select name="scope">
         <% Object.entries(scopesMap).forEach(([value, name]) => {
-            if (rule.scope === value) {
+            if (rule.scope === value || (rule.scope === undefined && value === 'transaction')) {
           %>
-        <option value="<%= value %>" selected><%= name %></option>
+        <option selected value="<%= value %>"><%= name %></option>
         <% } else { %>
         <option value="<%= value %>"><%= name %></option>
         <% }}); %>

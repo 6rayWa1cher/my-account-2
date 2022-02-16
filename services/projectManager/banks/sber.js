@@ -29,7 +29,6 @@ export const importSber = (account, buffer) =>
             const transactionType = amount[0] === "-" ? "Withdraw" : "Deposit";
 
             const transaction = {
-              transactionType,
               amount: normalizedAmount,
               currencyCode,
               description: data["Описание операции"],
@@ -55,6 +54,7 @@ export const importSber = (account, buffer) =>
             }
             const transactionGroup = {
               groupTitle: null,
+              transactionType,
               date: moment.tz(
                 data["Дата операции"],
                 "DD.MM.YYYY HH:mm",

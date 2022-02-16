@@ -12,9 +12,9 @@ const ProjectSchema = new mongoose.Schema({
       groupTitle: String,
       date: Date,
       processDate: Date,
+      transactionType: String,
       transactions: [
         {
-          transactionType: String,
           amount: String,
           description: String,
           currencyId: String,

@@ -85,7 +85,8 @@
               }
               trClassArray.push('transactionGroupContent');
             }
-            const isNegative = transaction.transactionType === 'Withdraw';
+            const isNegative = transaction.sourceName === currentAccount;
+            const isTransfer = group.transactionType === 'Transfer';
             const amount = transaction.amount.substring(isNegative ? 0 : 1) +
               (currencyToSign[transaction.currencyCode] ? currencyToSign[transaction.currencyCode] : ' ' + transaction.currencyCode)
               + (grouped ? ` (${groupAmount})` : '');
@@ -105,7 +106,7 @@
           <td>
             <%= transaction.description %>
           </td>
-          <% if (currentAccount !== transaction.sourceName) { %>
+          <% if (!isTransfer && currentAccount !== transaction.sourceName) { %>
           <td style="background-color: <%= sourceColor %>">
             <span class="<%= darkOrLight(sourceColor) %>">
               <%= transaction.sourceName %>
@@ -119,7 +120,7 @@
           </td>
           <% } %>
 
-          <% if (currentAccount !== transaction.destinationName) { %>
+          <% if (!isTransfer && currentAccount !== transaction.destinationName) { %>
           <td style="background-color: <%= destinationColor %>">
             <span class="<%= darkOrLight(destinationColor) %>">
               <%= transaction.destinationName %>
@@ -133,7 +134,7 @@
           </td>
           <% } %>
 
-          <td class="<%= isNegative ? 'has-background-danger' : 'has-background-success' %>">
+          <td class="<%= !isTransfer ? (isNegative ? 'has-background-danger' : 'has-background-success') : '' %>">
             <%= amount %>
           </td>
           <td>

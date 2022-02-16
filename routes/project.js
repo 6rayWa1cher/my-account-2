@@ -131,6 +131,7 @@ router.put(
         transaction.amount = `-${transaction.amount}`;
         transaction.tags = newGroup.transactions[i].tags?.split?.(",");
       });
+      group.transactionType = newGroup.transactionType;
       project.lastUpdatedAt = new Date();
 
       await project.save();
@@ -142,5 +143,32 @@ router.put(
     }
   }
 );
+
+router.delete(
+  "/:id/:group",
+  getProjectById(),
+  getGroupFromProject,
+  async (req, res, next) => {
+    try {
+      if (!req.group) {
+        throw new Error("not found");
+      }
+      req.project.transactionGroups = req.project.transactionGroups.filter(
+        (g) => !g._id.equals(req.group._id)
+      );
+      await req.project.save();
+      res.redirect(`/projects/${req.project._id}`);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get("/:id/export", getProjectById(), (req, res) => {
+  if (!req.group) {
+    throw new Error("not found");
+  }
+  // const transfers = req.group.transactionGroups.filter(g => g.)
+});
 
 export default router;
