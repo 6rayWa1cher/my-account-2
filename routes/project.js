@@ -72,6 +72,7 @@ router.get("/:id", getProjectById(), (req, res) => {
   }
   res.render("pages/project", {
     project: req.project,
+    exportLink: `/projects/${req.project._id}/export`,
     deleteLink: `/projects/${req.project._id}?_method=DELETE`,
   });
 });

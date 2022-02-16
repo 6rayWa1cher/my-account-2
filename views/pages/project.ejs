@@ -4,6 +4,9 @@
     <h1 class="title"><%= project.name %></h1>
   </div>
   <div class="column is-narrow">
+    <a href="<%= exportLink %>" class="button is-info">Экспортировать</a>
+  </div>
+  <div class="column is-narrow">
     <form action="<%= deleteLink %>" method="post">
       <input type="submit" value="Удалить" class="button is-danger" />
     </form>

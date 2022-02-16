@@ -104,7 +104,7 @@
       <label class="label">Тип группы транзакций</label>
       <div class="control">
         <div class="select">
-          <select class="transactionType" required>
+          <select class="transactionType" name="transactionType" required>
             <option <%= group.transactionType === 'Deposit' ? 'selected' : '' %> value="Deposit">
               Доход
             </option>

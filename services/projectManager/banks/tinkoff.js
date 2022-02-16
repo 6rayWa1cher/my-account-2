@@ -21,7 +21,7 @@ export const importTinkoff = (account, buffer) =>
             const amount = data["Сумма операции"];
             const currencyCode = data["Валюта операции"];
             const paymentCurrencyCode = data["Валюта платежа"];
-            const normalizedAmount = normalizeAmount(amount);
+            const normalizedAmount = normalizeAmount(Number.parseFloat(amount));
             const transactionType = amount[0] === "-" ? "Withdraw" : "Deposit";
 
             const transaction = {
