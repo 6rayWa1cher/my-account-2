@@ -1,4 +1,5 @@
 import { Readable } from "stream";
+import { Iconv } from "iconv";
 
 /**
  * https://stackoverflow.com/a/54136803
@@ -15,3 +16,5 @@ export const bufferToStream = (binary) => {
 
   return readableInstanceStream;
 };
+
+export const convert1251 = () => new Iconv("CP1251", "utf-8");

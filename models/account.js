@@ -12,6 +12,7 @@ const AccountSchema = new mongoose.Schema({
       trigger: { type: String, required: true },
       action: { type: String, required: true },
       note: String,
+      scope: { type: String, required: true },
     },
   ],
 });

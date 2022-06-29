@@ -1,50 +1,64 @@
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <%- include('../partials/head'); %>
-  </head>
-  <body>
-    <header><%- include('../partials/header') %></header>
-    <div class="container pt-5">
-      <form action="/accounts/" method="post">
-        <div class="field">
-          <label class="label">Стратегия</label>
-          <div class="control">
-            <div class="select">
-              <select name="importStrategy">
-                <% importStrategies.forEach(({ internalReference, name }) => {%>
-                <option value="<%- internalReference %>"><%= name %></option>
-                <% }); %>
-              </select>
-            </div>
-          </div>
+<%- include('../partials/top') %>
+<h1 class="title">Аккаунты</h1>
+<div class="box">
+  <h2 class="subtitle">Создать аккаунт</h2>
+  <form action="/accounts/" method="post">
+    <div class="field">
+      <label class="label">Стратегия</label>
+      <div class="control">
+        <div class="select">
+          <select name="importStrategy">
+            <% importStrategies.forEach(({ internalReference, name }) => {%>
+            <option value="<%- internalReference %>"><%= name %></option>
+            <% }); %>
+          </select>
         </div>
-        <div class="field">
-          <label class="label">Название счета</label>
-          <div class="control">
-            <input
-              class="input"
-              type="text"
-              placeholder="Text input"
-              name="fireflyName"
-            />
-          </div>
-        </div>
-        <div class="field is-grouped">
-          <div class="control">
-            <button type="submit" class="button is-link">Отправить</button>
-          </div>
-          <div class="control">
-            <button type="reset" class="button is-link is-light">
-              Очистить
-            </button>
-          </div>
-        </div>
-      </form>
-      <% accounts.forEach(account => {%>
-      <p><%=JSON.stringify(account)%></p>
-      <%});%>
+      </div>
     </div>
-    <footer><%- include('../partials/footer') %></footer>
-  </body>
-</html>
+    <div class="field">
+      <label class="label">Название счета</label>
+      <div class="control">
+        <input class="input" type="text" placeholder="Text input" name="fireflyName" />
+      </div>
+    </div>
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" class="button is-link">Отправить</button>
+      </div>
+      <div class="control">
+        <button type="reset" class="button is-link is-light">
+          Очистить
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="box">
+  <div class="table-container">
+    <table class="table is-hoverable is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>Название аккаунта</th>
+          <th>Стратегия импорта</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% accounts.forEach(account => { %>
+        <tr>
+          <td><%= account.fireflyAccount.name %></td>
+          <td><%= importStrategies.find(s => s.internalReference === account.importStrategy).name %></td>
+          <td>
+            <a href="<%= `/accounts/${account._id}/` %>" class="button">
+              <span class="icon">
+                <i class="fas fa-solid fa-arrow-right-from-bracket"></i>
+              </span>
+            </a>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/bottom') %>

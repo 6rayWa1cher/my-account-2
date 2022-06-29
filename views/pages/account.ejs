@@ -1,0 +1,57 @@
+<%- include('../partials/top') %>
+<div class="columns">
+  <div class="column">
+    <h1 class="title"><%= account.fireflyAccount.name %></h1>
+  </div>
+  <div class="column is-narrow">
+    <form action="<%= deleteLink %>" method="post">
+      <input type="submit" value="Удалить" class="button is-danger" />
+    </form>
+  </div>
+</div>
+<div class="box">
+  <h2 class="subtitle">Правила автоматизации</h2>
+  <div class="table-container">
+    <table class="table is-hoverable is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Название автоматизации</th>
+          <th>Область применения</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% account.automatizationRules.forEach(rule => {
+          %>
+        <tr>
+          <td><%= rule._id %></td>
+          <td><%= rule.note %></td>
+          <td><%= scopesMap[rule.scope] %></td>
+          <td style="display: flex; gap: 5px;">
+            <a href="<%= `/accounts/${account._id}/${rule._id}` %>" class="button">
+              <span class="icon">
+                <i class="fas fa-solid fa-pen-to-square"></i>
+              </span>
+            </a>
+            <form action="<%= `/accounts/${account._id}/${rule._id}?_method=DELETE` %>" method="post">
+              <button type="submit" class="button is-danger ">
+                <span class="icon">
+                  <i class="fas fa-solid fa-delete-left"></i>
+                </span>
+              </button>
+            </form>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="box">
+  <h2 class="subtitle">Добавить правило автоматизации</h2>
+  <form class="form" action="<%= addRuleLink %>" method="post">
+    <%- include('../partials/ruleForm', { rule: {} }) %>
+  </form>
+</div>
+<%- include('../partials/bottom') %>

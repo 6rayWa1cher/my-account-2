@@ -1,52 +1,80 @@
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <%- include('../partials/head'); %>
-  </head>
-  <body>
-    <header><%- include('../partials/header') %></header>
-    <div class="container pt-5">
-      <form action="/projects/" method="post" enctype="multipart/form-data">
-        <div class="file">
-          <label class="file-label">
-            <input class="file-input" type="file" name="upload" />
-            <span class="file-cta">
-              <span class="file-icon">
-                <i class="fas fa-upload"></i>
-              </span>
-              <span class="file-label"> Choose a file… </span>
-            </span>
-          </label>
-        </div>
-        <div class="field">
-          <label class="label">Счет</label>
-          <div class="control">
-            <div class="select">
-              <select name="accountId">
-                <% accounts.forEach(account => {%>
-                <option value="<%- account._id %>">
-                  <%= account.fireflyAccount.name %>
-                </option>
-                <% }); %>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="field is-grouped">
-          <div class="control">
-            <button type="submit" class="button is-link">Отправить</button>
-          </div>
-          <div class="control">
-            <button type="reset" class="button is-link is-light">
-              Очистить
-            </button>
-          </div>
-        </div>
-      </form>
-      <% projects.forEach(project => {%>
-      <p><%=project._id%></p>
-      <%});%>
+<%- include('../partials/top') %>
+<h1 class="title">Проекты</h1>
+<div class="box">
+  <h2 class="subtitle">Создать проект</h2>
+  <form action="/projects/" method="post" enctype="multipart/form-data">
+    <div class="file has-name">
+      <label class="file-label">
+        <input class="file-input" type="file" name="upload">
+        <span class="file-cta">
+          <span class="file-icon">
+            <i class="fas fa-upload"></i>
+          </span>
+          <span class="file-label">
+            Choose a file…
+          </span>
+        </span>
+        <span class="file-name">
+        </span>
+      </label>
     </div>
-    <footer><%- include('../partials/footer') %></footer>
-  </body>
-</html>
+    <div class="field">
+      <label class="label">Счет</label>
+      <div class="control">
+        <div class="select">
+          <select name="accountId">
+            <% accounts.forEach(account => {%>
+            <option value="<%- account._id %>">
+              <%= account.fireflyAccount.name %>
+            </option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" class="button is-link">Отправить</button>
+      </div>
+      <div class="control">
+        <button type="reset" class="button is-link is-light">
+          Очистить
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="box">
+  <div class="table-container">
+    <table class="table is-hoverable is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>Название проекта</th>
+          <th>Дата изменения</th>
+          <th>Статус</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% projects.forEach(project => {
+              const statusToRus = {created: "Создан", exported: 'Экспортирован'};
+            %>
+        <tr>
+          <td><%= project.name %></td>
+          <td><%= project.lastUpdatedAt.toLocaleString("ru-RU", {timeZone: "Europe/Moscow"}) %></td>
+          <td><%= statusToRus[project.status] %></td>
+          <td>
+            <a href="<%= `/projects/${project._id}/` %>" class="button">
+              <span class="icon">
+                <i class="fas fa-solid fa-arrow-right-from-bracket"></i>
+              </span>
+            </a>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<script src="/javascript/projects.js"></script>
+<%- include('../partials/bottom') %>

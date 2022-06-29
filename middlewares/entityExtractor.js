@@ -1,5 +1,6 @@
 import Account from "../models/account.js";
 import Project from "../models/project.js";
+import mongoose from "mongoose";
 
 export const getAllProjects = (req, res, next) =>
   Project.find({ owner: req.user.id })
@@ -43,3 +44,14 @@ export const getProjectById =
         next();
       })
       .catch((err) => next(err));
+
+export const getRuleFromAccountById =
+  ({ field, path = "rule" } = {}) =>
+  (req, res, next) => {
+    req.rule =
+      req.account &&
+      req.account.automatizationRules.find((r) =>
+        r._id.equals(field ? req.body[field] : req.params[path])
+      );
+    next();
+  };

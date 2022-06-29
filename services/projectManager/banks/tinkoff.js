@@ -1,10 +1,7 @@
 import csv from "csv-parser";
-import Project from "../models/project.js";
-import { bufferToStream } from "../utils/node.js";
+import { bufferToStream, convert1251 } from "../../../utils/node.js";
 import moment from "moment-timezone";
-import { nanoid } from "nanoid";
-
-const normalizeAmount = (amount) => (amount[0] === "-" ? amount : "-" + amount);
+import { normalizeAmount } from "../utils.js";
 
 export const importTinkoff = (account, buffer) =>
   new Promise((resolve, reject) => {
@@ -22,26 +19,22 @@ export const importTinkoff = (account, buffer) =>
         .on("data", (data) => {
           try {
             const amount = data["Сумма операции"];
-            const normalizedAmount = normalizeAmount(amount);
+            const currencyCode = data["Валюта операции"];
+            const paymentCurrencyCode = data["Валюта платежа"];
+            const normalizedAmount = normalizeAmount(Number.parseFloat(amount));
             const transactionType = amount[0] === "-" ? "Withdraw" : "Deposit";
+
             const transaction = {
-              transactionId: nanoid(),
-              transactionType,
-              date: moment.tz(
-                data["Дата операции"],
-                "DD.MM.YYYY HH:mm:ss",
-                "Europe/Moscow"
-              ),
-              processDate: ((field) =>
-                field && moment(field, "DD.MM.YYYY", "Europe/Moscow"))(
-                data["Дата платежа"]
-              ),
               amount: normalizedAmount,
-              currencyCode: data["Валюта операции"],
-              foreignAmount: data["Сумма платежа"],
-              foreignCurrencyCode: data["Валюта платежа"],
+              currencyCode,
               description: data["Описание"],
+              generated: false,
             };
+
+            if (paymentCurrencyCode !== currencyCode) {
+              transaction.foreignAmount = data["Сумма платежа"];
+              transaction.foreignCurrencyCode = paymentCurrencyCode;
+            }
             if (transactionType === "Withdraw") {
               transaction.sourceId = account.fireflyAccount.id;
               transaction.sourceName = account.fireflyAccount.name;
@@ -53,6 +46,16 @@ export const importTinkoff = (account, buffer) =>
             }
             const transactionGroup = {
               groupTitle: null,
+              transactionType,
+              date: moment.tz(
+                data["Дата операции"],
+                "DD.MM.YYYY HH:mm:ss",
+                "Europe/Moscow"
+              ),
+              processDate: ((field) =>
+                field && moment(field, "DD.MM.YYYY", "Europe/Moscow"))(
+                data["Дата платежа"]
+              ),
               transactions: [transaction],
             };
             transactionGroups.push(transactionGroup);
@@ -64,6 +67,7 @@ export const importTinkoff = (account, buffer) =>
           resolve({
             owner: account.owner,
             createdAt: new Date(),
+            lastUpdatedAt: new Date(),
             status: "created",
             account: account._id,
             transactionGroups,
@@ -73,10 +77,3 @@ export const importTinkoff = (account, buffer) =>
       reject(err);
     }
   });
-
-export const strategiesMap = {
-  tinkoff: {
-    func: importTinkoff,
-    name: "Тинькофф",
-  },
-};

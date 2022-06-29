@@ -1,0 +1,129 @@
+<%- include('../partials/top') %>
+<div class="columns">
+  <div class="column">
+    <h1 class="title">Группа транзакций <%= group._id %></h1>
+  </div>
+  <div class="column is-narrow">
+    <button id="append-button" class="button is-light">Добавить</button>
+  </div>
+  <div class="column is-narrow">
+    <form action="<%= deleteLink %>" method="post">
+      <input type="submit" value="Удалить" class="button is-danger" />
+    </form>
+  </div>
+</div>
+<template id="transaction-template">
+  <div class="divider"></div>
+  <div class="field">
+    <label class="label">Категория</label>
+    <div class="control">
+      <input class="input transaction-categoryName" type="text">
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Описание транзакции</label>
+    <div class="control">
+      <input class="input transaction-description" type="text" required>
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Счет-отправитель</label>
+    <div class="control">
+      <input class="input transaction-sourceName" type="text" required>
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Счет-получатель</label>
+    <div class="control">
+      <input class="input transaction-destinationName" type="text" required>
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Сумма (без знака)</label>
+    <div class="control">
+      <input class="input transaction-amount" type="number" step="0.01" required>
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Валюта</label>
+    <div class="control">
+      <input class="input transaction-currencyCode" type="text" required>
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Сумма в иностранной валюте (без знака)</label>
+    <div class="control">
+      <input class="input transaction-foreignAmount" step="0.01" type="number">
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Иностранная валюта</label>
+    <div class="control">
+      <input class="input transaction-foreignCurrencyCode" type="text">
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Бюджет</label>
+    <div class="control">
+      <input class="input transaction-budgetName" type="text">
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Теги (через запятую)</label>
+    <div class="control">
+      <input class="input transaction-tags" type="text">
+    </div>
+  </div>
+</template>
+<div class="box">
+  <form action="<%= putLink %>" method="post" id="edit-form">
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" class="button is-link">Отправить</button>
+      </div>
+      <div class="control">
+        <button type="reset" class="button is-link is-light">
+          Очистить
+        </button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Название группы</label>
+      <div class="control">
+        <input class="input" type="text" name="groupTitle" value="<%= group.groupTitle %>">
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Дата и время</label>
+      <div class="control">
+        <!-- <input type="datetime-local" value="<%% (() => {const s = group.date.toISOString(); return s.substring(0, s.length - 1); })() %>"> -->
+        <span><%= group.date.toLocaleString('ru-RU') %></span>
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Тип группы транзакций</label>
+      <div class="control">
+        <div class="select">
+          <select class="transactionType" name="transactionType" required>
+            <option <%= group.transactionType === 'Deposit' ? 'selected' : '' %> value="Deposit">
+              Доход
+            </option>
+            <option <%= group.transactionType === 'Withdraw' ? 'selected' : '' %> value="Withdraw">
+              Расход
+            </option>
+            <option <%= group.transactionType === 'Transfer' ? 'selected' : '' %> value="Transfer">
+              Перевод
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div id="edit-form-data" hidden>
+      <%= JSON.stringify(group) %>
+    </div>
+  </form>
+</div>
+<script src="/javascript/transactionGroupEdit.js">
+
+</script>
+<%- include('../partials/bottom') %>

@@ -4,6 +4,9 @@
     <h1 class="title"><%= project.name %></h1>
   </div>
   <div class="column is-narrow">
+    <a href="<%= exportLink %>" class="button is-info">Экспортировать</a>
+  </div>
+  <div class="column is-narrow">
     <form action="<%= deleteLink %>" method="post">
       <input type="submit" value="Удалить" class="button is-danger" />
     </form>
@@ -17,6 +20,7 @@
           <th>Группа</th>
           <th>Дата</th>
           <th>Категория</th>
+          <th>Описание</th>
           <th><abbr title="Счет-отправитель">СО</abbr></th>
           <th><abbr title="Счет-получатель">СП</abbr></th>
           <th>Сумма</th>
@@ -84,7 +88,8 @@
               }
               trClassArray.push('transactionGroupContent');
             }
-            const isNegative = transaction.transactionType === 'Withdraw';
+            const isNegative = transaction.sourceName === currentAccount;
+            const isTransfer = group.transactionType === 'Transfer';
             const amount = transaction.amount.substring(isNegative ? 0 : 1) +
               (currencyToSign[transaction.currencyCode] ? currencyToSign[transaction.currencyCode] : ' ' + transaction.currencyCode)
               + (grouped ? ` (${groupAmount})` : '');
@@ -96,13 +101,15 @@
             <%= group.groupTitle %>
           </td>
           <td>
-            <%= transaction.date.toLocaleString("ru-RU", { timeZone: 'Europe/Moscow' }) %>
+            <%= group.date.toLocaleString("ru-RU", {timeZone: 'Europe/Moscow' }).substring(0, 5) %>
           </td>
           <td>
             <%= transaction.categoryName %>
           </td>
-
-          <% if (currentAccount !== transaction.sourceName) { %>
+          <td>
+            <%= transaction.description %>
+          </td>
+          <% if (!isTransfer && currentAccount !== transaction.sourceName) { %>
           <td style="background-color: <%= sourceColor %>">
             <span class="<%= darkOrLight(sourceColor) %>">
               <%= transaction.sourceName %>
@@ -116,7 +123,7 @@
           </td>
           <% } %>
 
-          <% if (currentAccount !== transaction.destinationName) { %>
+          <% if (!isTransfer && currentAccount !== transaction.destinationName) { %>
           <td style="background-color: <%= destinationColor %>">
             <span class="<%= darkOrLight(destinationColor) %>">
               <%= transaction.destinationName %>
@@ -130,19 +137,28 @@
           </td>
           <% } %>
 
-          <td class="<%= isNegative ? 'has-background-danger' : 'has-background-success' %>">
+          <td class="<%= !isTransfer ? (isNegative ? 'has-background-danger' : 'has-background-success') : '' %>">
             <%= amount %>
           </td>
           <td>
             <%= transaction.budgetName %>
           </td>
           <td>
-            <% transaction.tags.forEach(tag => {%>
-            <span class="tag is-medium" style="background-color: <%= stringToColour(tag) %>"><%= tag %></span>
+            <% transaction.tags.forEach(tag => {
+                const color = stringToColour(tag);
+                const textColor = darkOrLight(color);
+              %>
+            <span class="tag is-medium <%= textColor %>" style="background-color: <%= color %>">
+              <%= tag %>
+            </span>
             <% }); %>
           </td>
           <td>
-
+            <a href="<%= `/projects/${project._id}/${group._id}` %>" class="button">
+              <span class="icon">
+                <i class="fas fa-solid fa-pen-to-square"></i>
+              </span>
+            </a>
           </td>
         </tr>
         <%

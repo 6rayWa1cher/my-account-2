@@ -9,16 +9,14 @@ const ProjectSchema = new mongoose.Schema({
   account: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
   transactionGroups: [
     {
-      groupId: String,
       groupTitle: String,
+      date: Date,
+      processDate: Date,
+      transactionType: String,
       transactions: [
         {
-          transactionId: String,
-          transactionType: String,
-          date: Date,
           amount: String,
           description: String,
-          order: Number,
           currencyId: String,
           currencyCode: String,
           foreignAmount: String,
@@ -34,7 +32,7 @@ const ProjectSchema = new mongoose.Schema({
           destinationName: String,
           tags: [String],
           internalReference: String,
-          processDate: Date,
+          generated: Boolean,
         },
       ],
     },

@@ -1,0 +1,35 @@
+<%- include('../partials/top') %>
+<h1 class="title">Экспорт проекта "<%= project.name %>"</h1>
+<div class="box">
+  <form action="<%= postLink %>" method="post">
+    <h2>Разрешить экспорт переводов со счетов</h2>
+    <div class="box">
+      <% incomingTransferAccounts.forEach(accountName => { %>
+      <label class="checkbox">
+        <input type="checkbox" name="<%= `incoming[${accountName}]` %>" checked>
+        <%= accountName %>
+      </label>
+      <% }); %>
+    </div>
+    <h2>Разрешить экспорт переводов на счета</h2>
+    <div class="box">
+      <% outgoingTransferAccounts.forEach(accountName => { %>
+      <label class="checkbox">
+        <input type="checkbox" name="<%= `outgoing[${accountName}]` %>" checked>
+        <%= accountName %>
+      </label>
+      <% }); %>
+    </div>
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" class="button is-link">Отправить</button>
+      </div>
+      <div class="control">
+        <button type="reset" class="button is-link is-light">
+          Очистить
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+<%- include('../partials/bottom') %>
